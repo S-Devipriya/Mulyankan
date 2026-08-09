@@ -1,0 +1,19 @@
+# Database
+psycopg2-binary
+pgvector
+
+# PDF Extraction & Processing
+PyMuPDF
+
+# Vector Embeddings & Similarity
+sentence-transformers
+scikit-learn
+
+# Environment & Configuration
+python-dotenv
+
+# AI / Gemini API
+google-genai
+
+# Web Framework
+Django>=5.0
