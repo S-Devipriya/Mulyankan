@@ -1,0 +1,76 @@
+/* Color pallete 
+#1B365D;
+#227B9B;
+#00B4D8;
+#F4F7FB; */
+
+body {
+    background-color: #F4F7FB;
+    color: #2D3748;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Navbar */
+.navbar-custom {
+    background-color: #FFFFFF;
+    border-bottom: 2px solid rgba(34, 123, 155, 0.15);
+    padding: 0.65rem 1.5rem;
+}
+
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+
+.navbar-logo {
+    height: 72px;
+    width: auto;
+    object-fit: contain;
+}
+
+.brand-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #1B365D;
+    letter-spacing: 0.5px;
+    line-height: 1.1;
+}
+
+.brand-subtitle {
+    font-size: 0.72rem;
+    color: #227B9B;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+/* Sign In Button */
+.btn-signin {
+    background-color: #1B365D;
+    color: #FFFFFF;
+    font-weight: 500;
+    font-size: 0.95rem;
+    padding: 0.45rem 1.35rem;
+    border-radius: 6px;
+    border: 1px solid #1B365D;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-signin:hover {
+    background-color: #227B9B;
+    border-color: #227B9B;
+    color: #FFFFFF;
+    box-shadow: 0 4px 10px rgba(34, 123, 155, 0.25);
+}
+
+/* Main Content Container */
+.main-container {
+    flex: 1;
+    padding: 2rem 1rem;
+    background-image: url("C:\Users\Admin\Documents\GitHub\Mulyankan\static\images\logo.png");
+}
