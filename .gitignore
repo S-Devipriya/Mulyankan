@@ -19,6 +19,10 @@ env/
 media/
 data/
 
+# Databases & Local Logs
+*.sqlite3
+*.log
+
 # IDE Configuration
 .vscode/
 .idea/
