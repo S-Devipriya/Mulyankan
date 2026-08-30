@@ -4,6 +4,7 @@ pgvector
 
 # PDF Extraction & Processing
 PyMuPDF
+pymupdf4llm
 
 # Vector Embeddings & Similarity
 sentence-transformers
