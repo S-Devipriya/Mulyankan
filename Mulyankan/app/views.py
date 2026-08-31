@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.contrib.auth import get_user_model
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
+from django.db import IntegrityError
 
 # Create your views here.
 User = get_user_model()
@@ -10,22 +11,33 @@ User = get_user_model()
 def welcome(request):
     return render(request,'welcome.html')
 
-def register(request):
+def register_user(request):
+    if request.user.is_authenticated:
+        return redirect('welcome')
+    
     if request.method == 'POST':
-        username = request.POST.get('username')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
+        username = request.POST.get('username','').strip()
+        email = request.POST.get('email','').strip()
+        password = request.POST.get('password','')
 
-        User.objects.create (
-            username = username,
-            email = email,
-            password = password
-        )
-        return redirect('login')
+        if not username or not password or not email:
+            messages.error(request, 'Please enter all details.')
+            return render(request, 'register.html')
+
+        try:
+            User.objects.create (
+                username = username,
+                email = email,
+                password = password
+            )
+            messages.success(request, 'Registration successful. Please log in.')
+            return redirect('login')
+        except IntegrityError:
+            messages.error(request, 'A user with that username or email already exists.')
     
     return render(request, 'register.html')
 
-def login(request):
+def login_user(request):
     if request.user.is_authenticated:
         return redirect('welcome')
 
@@ -33,16 +45,10 @@ def login(request):
         username = request.POST.get('username', '').strip()
         password = request.POST.get('password', '')
 
-        try:
-            user_obj = User.objects.get(username=username)
-            username = user_obj.username
-        except User.DoesNotExist:
-            username = None
-
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
-            #login(request, user)
+            login(request, user)
             return redirect('welcome')
         else:
             messages.error(request, 'Invalid email or password. Please try again.')
