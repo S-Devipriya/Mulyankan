@@ -25,7 +25,8 @@ def register_user(request):
             return render(request, 'register.html')
 
         try:
-            User.objects.create (
+            #create_user() automatically hashes password unlike create()
+            User.objects.create_user(
                 username = username,
                 email = email,
                 password = password
