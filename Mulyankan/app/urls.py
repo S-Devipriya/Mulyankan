@@ -3,5 +3,7 @@ from django.urls import include
 from.import views
 
 urlpatterns = [
-    path('', views.welcome)
+    path('', views.welcome, name='welcome'),
+    path('register', views.register),
+    path('login', views.login, name='login'),
 ]

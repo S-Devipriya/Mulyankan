@@ -1,10 +1,11 @@
+{% extends 'base.html' %}
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mulyankan | Context-Aware Subjective Evaluation</title>
+    <title>{% block title %} Mulyankan | Context-Aware Subjective Evaluation {% endblock %}</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
@@ -12,36 +13,14 @@
     
 </head>
 <body>
-
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand navbar-custom sticky-top">
-        <div class="container-fluid">
-            
-            <a class="navbar-brand" href="#">
-                <img src="{% static 'images/logo.png' %}" alt="Mulyankan Logo" class="navbar-logo">
-                <div class="d-none d-sm-flex flex-column">
-                    <span class="brand-title">MULYANKAN</span>
-                    <span class="brand-subtitle">Context-Aware Evaluation</span>
-                </div>
-            </a>
-
-            <div class="ms-auto d-flex align-items-center">
-                <a href="#" class="btn btn-signin d-flex align-items-center gap-2">
-                    <i class="bi bi-box-arrow-in-right"></i>
-                    <span>Sign In</span>
-                </a>
-            </div>
-
-        </div>
-    </nav>
-
+    {% block content%}
     <!-- Main Content Area -->
     <main class="main-container">
         <div class="container">
         <img src="{% static 'images/logo.png' %}" alt="">
         </div>
     </main>
-
+    {% endblock%}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

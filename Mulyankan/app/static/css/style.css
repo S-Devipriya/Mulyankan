@@ -74,3 +74,13 @@ body {
     padding: 2rem 1rem;
     background-image: url("C:\Users\Admin\Documents\GitHub\Mulyankan\static\images\logo.png");
 }
+
+.form-label {
+    color:#1B365D;
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.card {
+    background-color: #227B9B;
+}
