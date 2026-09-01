@@ -17,7 +17,31 @@
     <!-- Main Content Area -->
     <main class="main-container">
         <div class="container">
-        <img src="{% static 'images/logo.png' %}" alt="">
+            <div class="row align-items-center">
+                <div class="col">
+                    <img src="{% static 'images/logo.png' %}" alt="">
+                </div>
+                <div class="col">
+                    <p><span class="welcome-text">Mulyankan is a context-aware evaluation system designed to assist evaluators in grading subjective student assignments with the power of AI, making evaluations easy, consistent and accurate.</span></p>
+                    <ul>
+                        <li><span class="welcome-text">Context-Grounded Scoring</span>
+                        <br>Evaluates responses directly against official course material and reference textbooks
+                        </li>
+                        <li><span class="welcome-text">Multi-Criteria Breakdown</span>
+                            <br>Scores content accuracy, presentation, and linguistic quality with transparent rationale
+                        </li>
+                        <li><span class="welcome-text">Human-in-the-Loop</span>
+                            <br>Provides evaluators with an interactive audit trail and editable final marks
+                        </li>
+                    </ul>
+                </div>
+                <div class="row justify-content-center">
+                    <div class="col text-center">
+                        <a href="{%url 'login'%}" class="btn btn-signin gap-2">
+                            <span>Get Started</span>
+                        </a>
+                    </div>
+                </div>
         </div>
     </main>
     {% endblock%}

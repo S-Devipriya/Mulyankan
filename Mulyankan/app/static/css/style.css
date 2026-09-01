@@ -23,7 +23,7 @@ body {
 .navbar-brand {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     text-decoration: none;
 }
 
@@ -49,6 +49,20 @@ body {
     letter-spacing: 0.8px;
 }
 
+.welcome-text {
+    font-size: 1.25rem;
+    color: #1B365D;
+    text-align: justify;
+}
+
+a {
+    color: #1B365D;
+}
+
+a:hover {
+    color: #227B9B;
+}
+
 /* Sign In Button */
 .btn-signin {
     background-color: #1B365D;
@@ -72,15 +86,14 @@ body {
 .main-container {
     flex: 1;
     padding: 2rem 1rem;
-    background-image: url("C:\Users\Admin\Documents\GitHub\Mulyankan\static\images\logo.png");
 }
 
 .form-label {
     color:#1B365D;
-    font-size: 2rem;
-    font-weight: bold;
+    font-weight: 500;
+    font-size: 1.25rem;
 }
 
-.card {
-    background-color: #227B9B;
+.login-card {
+    background-color: #227b9bb6;
 }

@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth import get_user_model
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import IntegrityError
 
@@ -13,7 +14,7 @@ def welcome(request):
 
 def register_user(request):
     if request.user.is_authenticated:
-        return redirect('welcome')
+        return redirect('dashboard')
     
     if request.method == 'POST':
         username = request.POST.get('username','').strip()
@@ -40,7 +41,7 @@ def register_user(request):
 
 def login_user(request):
     if request.user.is_authenticated:
-        return redirect('welcome')
+        return redirect('dashboard')
 
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
@@ -50,8 +51,12 @@ def login_user(request):
 
         if user is not None:
             login(request, user)
-            return redirect('welcome')
+            return redirect('dashboard')
         else:
             messages.error(request, 'Invalid email or password. Please try again.')
     
     return render(request, 'login.html')
+
+@login_required
+def dashboard(request):
+    return render(request, 'dashboard.html')
