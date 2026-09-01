@@ -10,6 +10,8 @@
             <div class="col-11 col-sm-8 col-md-6 col-lg-4">
                 <div class="card login-card shadow-sm border rounded-3 p-4">
                     <img src="{% static 'images/logo.png' %}" alt="Mulyankan Logo" class="navbar-logo">
+                    <h2 class="text-center"><span class="auth-header">Welcome back</span></h2>
+                    <p class="text-center">Please enter your details to log in</p>
                     {% if messages %}
                         {% for message in messages %}
                             <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-{{ message.tags }}{% endif %} py-2 text-center" role="alert">
@@ -21,12 +23,12 @@
                         {% csrf_token %}
                         <div class="mb-3 text-start">
                             <label for="inputName" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="inputName" name="username" required>
+                            <input type="text" class="form-control" id="inputName" name="username" placeholder="Enter your username" required>
                         </div>
                         
                         <div class="mb-3 text-start">
                             <label for="inputPassword" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="inputPassword" name="password" required>
+                            <input type="password" class="form-control" id="inputPassword" name="password" placeholder="••••••••" required>
                         </div>
                         
                         <div class="text-center mt-4">

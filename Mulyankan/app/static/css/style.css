@@ -50,7 +50,7 @@ body {
 }
 
 .welcome-text {
-    font-size: 1.25rem;
+    font-size: 1.15rem;
     color: #1B365D;
     text-align: justify;
 }
@@ -86,14 +86,25 @@ a:hover {
 .main-container {
     flex: 1;
     padding: 2rem 1rem;
+    background-color: #227b9b30;
 }
 
 .form-label {
+    color:#1B365D;
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+.auth-header {
     color:#1B365D;
     font-weight: 500;
     font-size: 1.25rem;
 }
 
 .login-card {
-    background-color: #227b9bb6;
+    background-color: #e5f7fe;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px -5px rgba(15, 42, 74, 0.237), 0 4px 6px -2px rgba(15, 42, 74, 0.204);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    padding: 40px 32px;
 }
