@@ -55,6 +55,11 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+SESSION_COOKIE_HTTPONLY = True      # Prevents JavaScript access to session cookie
+SESSION_COOKIE_AGE = 1209600        # Default lifetime (2 weeks in seconds)
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+LOGIN_URL = 'login'                 # Ensures @login_required redirects correctly
+
 ROOT_URLCONF = 'Mulyankan.urls'
 
 TEMPLATES = [

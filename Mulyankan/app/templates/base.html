@@ -24,18 +24,34 @@
                     <span class="brand-subtitle">Context-Aware Evaluation</span>
                 </div>
             </a>
-            <!--
             <div class="ms-auto d-flex align-items-center">
-                <a href="{%url 'register'%}" class="btn btn-signin d-flex align-items-center mx-3 gap-2">
-                    <i class="bi bi-box-arrow-in-right"></i>
-                    <span>Register</span>
-                </a>
-                <a href="{%url 'login'%}" class="btn btn-signin d-flex align-items-center gap-2">
-                    <i class="bi bi-box-arrow-in-right"></i>
-                    <span>Login</span>
-                </a>
+            {% if request.resolver_match.url_name not in 'login register' %}
+                <div class="nav-links">
+                {% if user.is_authenticated %}
+                    <!-- Username link for profile management -->
+                    <a href="#" class="user-msg">
+                        Welcome, {{ user.username }}
+                    </a>
+                    <!-- Dashboard / Authenticated view -->
+                    <a href="{% url 'dashboard' %}" class="btn btn-signin align-items-center mx-3 gap-2">
+                        <span>Dashboard</span>
+                    </a>
+                    <!-- Secure POST form for Logout -->
+                    <form method="POST" action="{% url 'logout' %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-signin align-items-center">
+                            <span>Log Out</span>
+                        </button>
+                    </form>
+                    {% else %}
+                    <!-- Homepage / Unauthenticated view -->
+                    <a href="{% url 'login' %}" class="btn btn-signin d-flex align-items-center">
+                        <span>Log In</span>
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
             </div>
-            -->
         </div>
     </nav>
 

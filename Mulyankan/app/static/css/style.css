@@ -108,3 +108,8 @@ a:hover {
     border: 1px solid rgba(255, 255, 255, 0.8);
     padding: 40px 32px;
 }
+
+.user-msg {
+    text-decoration: none;
+    font-weight: bold;
+}

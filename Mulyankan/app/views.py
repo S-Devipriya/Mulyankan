@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth import get_user_model
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import IntegrityError
@@ -46,16 +46,26 @@ def login_user(request):
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
         password = request.POST.get('password', '')
+        remember_me = request.POST.get('remember_me')
 
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
             login(request, user)
+            if not remember_me:
+                request.session.set_expiry(0)
+            else:
+                request.session.set_expiry(1209600)  # 2 weeks in seconds
             return redirect('dashboard')
         else:
             messages.error(request, 'Invalid email or password. Please try again.')
     
     return render(request, 'login.html')
+
+def logout_user(request):
+    logout(request)
+    messages.info(request, 'You have been logged out.')
+    return redirect('login')
 
 @login_required
 def dashboard(request):
