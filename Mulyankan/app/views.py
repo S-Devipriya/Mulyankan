@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.contrib.auth import get_user_model
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.db import IntegrityError
 
@@ -62,6 +63,7 @@ def login_user(request):
     
     return render(request, 'login.html')
 
+@require_POST
 def logout_user(request):
     logout(request)
     messages.info(request, 'You have been logged out.')
