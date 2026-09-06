@@ -24,7 +24,7 @@ def evaluate_submission_pipeline(submission_id: int) -> EvaluationResult:
         q_num = unit.get("question_number", "Unknown")
         q_text = unit.get("question_text", "")
         s_answer = unit.get("student_answer", "")
-        max_marks = float(unit.get("max_marks", 10.0))
+        max_marks = float(unit.get("max_marks", 20.0))
 
         #Retrieving textbook reference context
         retrieved_chunks = retrieve_relevant_chunks(course, q_text, top_k=3)
@@ -58,7 +58,7 @@ def evaluate_submission_pipeline(submission_id: int) -> EvaluationResult:
             "question_number": q_num,
             "max_marks": max_marks,
             "score_awarded": score_awarded,
-            "scores_normalized": evaluation.get("scores_normalized", {}),
+            "scores_normalized": scores_norm,
             "plagiarism_score": plagiarism_score,
             "penalty_deducted": penalty_deducted,
             "feedback": q_feedback,
