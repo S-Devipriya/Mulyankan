@@ -37,7 +37,6 @@ def evaluate_submission_pipeline(submission_id: int) -> EvaluationResult:
         p_pct = float(scores_norm.get("presentation", 0.0))
         l_pct = float(scores_norm.get("linguistic", 0.0))
 
-        # Weight dimension by question max_marks
         weighted_content_sum += (c_pct / 100.0) * (max_marks * 0.70)
         weighted_presentation_sum += (p_pct / 100.0) * (max_marks * 0.15)
         weighted_linguistic_sum += (l_pct / 100.0) * (max_marks * 0.15)
