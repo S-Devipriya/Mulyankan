@@ -13,13 +13,21 @@ def decompose_submission_qa(markdown_text: str, course_code: str = "") -> List[D
     #Captures question number, question text and student answer body
     qa_pattern = re.compile(
         r'(?:^|\n)\s*'
+        r'(?:#+\s*)?'
+        r'[\*\_]*'
         r'(?:Q|Question)?\s*[\.\:\-]?\s*'
         r'(\d+\s*(?:\([a-zA-Z0-9]+\)|[a-zA-Z]|\.\d+)?)'
-        r'[\.\:\-\s]+'
+        r'[\.\:\-\s\*\_]+'
         r'(.*?)\s*'
-        r'(?:\n|\s+)(?:Ans(?:wer)?[\s\:\.\-]+)\s*'
+        r'(?:\n+\s*)'
+        r'(?:#+\s*)?'
+        r'[\*\_]*'
+        r'(?:<[a-z0-9]+>)*'
+        r'Ans(?:wer)?'
+        r'(?:<\/[a-z0-9]+>)*'
+        r'[\s\:\.\-\*\_]*\n+'
         r'([\s\S]*?)'
-        r'(?=(?:\n\s*(?:Q|Question)?\s*[\.\:\-]?\s*\d+\s*(?:\([a-zA-Z0-9]+\)|[a-zA-Z]|\.\d+)?[\.\:\-\s]+(?:Ans(?:wer)?|\w))|\Z)',
+        r'(?=(?:\n+\s*(?:#+\s*)?[\*\_]*(?:Q|Question)?\s*[\.\:\-]?\s*\d+[\.\:\-\s\*\_]+)|\Z)',
         re.IGNORECASE
     )
 
@@ -34,7 +42,8 @@ def decompose_submission_qa(markdown_text: str, course_code: str = "") -> List[D
 
         #Cleaning formatting
         q_text = re.sub(r'\s+', ' ', q_text)
-        q_text = re.sub(r'\(\s*\d+\s*marks?\s*\)', '', q_text, flags=re.IGNORECASE).strip()
+        q_text = re.sub(r'[\*_]*\(\s*\d+\s*marks?\s*\)[\*_]*', '', q_text, flags=re.IGNORECASE).strip()
+        q_text = q_text.strip('*_ ')
 
         #Normalizing question number for looking up in assignment_schemes.json
         canonical_q_num = app.services.scheme_manager.normalize_q_num(raw_q_num)
