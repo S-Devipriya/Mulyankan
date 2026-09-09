@@ -29,12 +29,15 @@
                 <div class="nav-links">
                 {% if user.is_authenticated %}
                     <!-- Username link for profile management -->
-                    <a href="#" class="user-msg">
+                    <a href="#" class="user-msg mx-3">
                         Welcome, {{ user.username }}
                     </a>
                     <!-- Dashboard / Authenticated view -->
-                    <a href="{% url 'dashboard' %}" class="btn btn-signin align-items-center mx-3 gap-2">
+                    <a href="{% url 'dashboard' %}" class="btn btn-signin align-items-center gap-2">
                         <span>Dashboard</span>
+                    </a>
+                    <a href="{% url 'result' %}" class="btn btn-signin align-items-center mx-3 gap-2">
+                        <span>Results</span>
                     </a>
                     <!-- Secure POST form for Logout -->
                     <form method="POST" action="{% url 'logout' %}" style="display: inline;">

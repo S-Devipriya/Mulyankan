@@ -3,5 +3,24 @@
 {% block title %}{% endblock %}
 
 {% block content %}
-
+    <table class="table">
+        <tr>
+            <th>Batch</th>
+            <th>Course</th>
+            <th>Evaluator</th>
+            <th>Enrollment Number</th>
+            <th>Extracted Text</th>
+            <th>Status</th>
+        </tr>
+        {% for a in assignment %}
+        <tr>
+            <td>{{a.batch}}</td>
+            <td>{{a.course}}</td>
+            <td>{{a.evaluator}}</td>
+            <td>{{a.enrollment_number}}</td>
+            <td><a href="#">View</a></td>
+            <td>{{a.status}}</td>
+        </tr>
+        {% endfor %}
+    </table>
 {% endblock %}

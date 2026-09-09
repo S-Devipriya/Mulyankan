@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}{% endblock %}
+
+{% block content %}
+    <table class="table">
+        <tr>
+            <th rowspan="2">Enrollment Number</th>
+            <th rowspan="2">Course</th>
+            <th colspan="4">Suggested Score</th>
+            <th rowspan="2">Approved Score</th>
+            <th rowspan="2">Remarks</th>
+            <th rowspan="2">Evaluator</th>
+            <th rowspan="2">Audit Logic</th>
+            <th rowspan="2">Reviewed At</th>
+            <th rowspan="2">View Assignment</th>
+        </tr>
+        <tr>
+            <th>Content</th>
+            <th>Presentation</th>
+            <th>Linguistic</th>
+            <th>Total</th>
+        </tr>
+        {% for r in result %}
+        <tr>
+            <td>{{r.submission.enrollment_number}}</td>
+            <td>{{r.submission.course}}</td>
+            <td>{{r.score_content}}</td>
+            <td>{{r.score_presentation}}</td>
+            <td>{{r.score_linguistic}}</td>
+            <td>{{r.suggested_final_score}}</td>
+            <td>{{r.human_final_score}}</td>
+            <td><textarea class="form-control">{{r.evaluator_remarks}}</textarea></td>
+            <td>{{r.submission.evaluator}}</td>
+            <td><a href="#">View</a></td>
+            <td>{{r.reviewed_at}}</td>
+            <td><a href="{% url 'view_assignment' r.submission.id %}" target="_blank">View</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+{% endblock %}
