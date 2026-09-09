@@ -30,5 +30,5 @@ def get_question_max_marks(course_data: dict, q_num: str, default: float = 20.0)
     return float(course_data.get("questions", {}).get(str(q_num), default))
 
 def normalize_q_num(q_str: str):
-    cleaned = re.sub(r'[\(\)\.\:\-\s]', '', str(q_str)).lower()
+    cleaned = re.sub(r'[\(\)\.\:\-\s]+', '', str(q_str)).lower()
     return cleaned
