@@ -10,7 +10,7 @@ from app.services.plagiarism_checker import compute_textbook_overlap
 client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 def decompose_submission_qa(markdown_text: str, course_code: str = "") -> List[Dict[str, Any]]:
-    #Captures question number, question text and student answer body
+    #Captures question number and student answer body
     q_header_pattern = re.compile(
         r'^\s*(?:#+\s*)?[\*\_]*(?:Q|Question)\s*\.?\s*'
         r'(\d+(?:\s*\.?\s*\(?[a-zA-Z0-9]+\)?)?)'
