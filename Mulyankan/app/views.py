@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.views.decorators.clickjacking import xframe_options_sameorigin
+from app.decorators import admin_required
 from django.db import IntegrityError
 from app.models import AssignmentSubmission, EvaluationResult
 from pathlib import Path
@@ -105,3 +106,7 @@ def stream_assignment_pdf(request, pk):
         raise Http404("File not found.")
     
     return FileResponse(open(resolved_path, 'rb'), content_type='application/pdf')
+
+@admin_required
+def admin_dashboard(request):
+    return render(request, 'admin_dashboard.html')
