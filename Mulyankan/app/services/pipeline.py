@@ -24,7 +24,7 @@ def evaluate_submission_pipeline(submission_id: int) -> EvaluationResult:
         q_num = unit.get("question_number", "Unknown")
         q_text = unit.get("question_text", "")
         s_answer = unit.get("student_answer", "")
-        max_marks = float(unit.get("max_marks", 20.0))
+        max_marks = float(unit.get("max_marks", 0.0))
 
         #Retrieving textbook reference context
         retrieved_chunks = retrieve_relevant_chunks(course, q_text, top_k=3)

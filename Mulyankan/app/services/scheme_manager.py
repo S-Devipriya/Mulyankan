@@ -24,7 +24,7 @@ def save_course_scheme(course_code: str, total_marks: float, questions: dict):
     for q_num, q_data in questions.items():
         canonical_key = normalize_q_num(q_num)
         formatted_questions[canonical_key] = {
-            "max_marks": float(q_data.get("max_marks", 20.0)),
+            "max_marks": float(q_data.get("max_marks", 0.0)),
             "question_text": str(q_data.get("question_text", "")).strip()
         }
 
