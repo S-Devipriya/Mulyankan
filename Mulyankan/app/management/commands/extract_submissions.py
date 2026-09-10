@@ -206,29 +206,16 @@ class Command(BaseCommand):
 
     def _isolate_answer_body(self, full_text: str) -> str:
         """Slices text starting from the LAST occurrence of Question 1 / Answer 1, skipping front matter and attached question papers."""
-        
-        pattern = re.compile(
-            r'(?:^|\n)\s*(?:#+\s*)?[\*\_]*(?:Q\s*1|Question\s*1)\b'
-            r'(?:(?!\b(?:Q|Question)\s*\d+\b)[\s\S])*?'
-            r'(?:\n\s*(?:#+\s*)?[\*\_]*(?:<[a-z0-9]+>)*Ans(?:wer)?\b)',
+
+        template_match = re.search(
+            r'Student\s+Submission\b.*?\n', 
+            full_text, 
             re.IGNORECASE
         )
 
-        matches = list(pattern.finditer(full_text))
-        if matches:
-            # Take the LAST match to bypass the question paper
-            start_pos = matches[-1].start()
-            content = full_text[start_pos:]
+        if template_match:
+            content = full_text[template_match.end():]
         else:
-            # Fallback: slice at the last solitary Answer 1 marker
-            fallback_matches = list(re.finditer(
-                r'(?:^|\n)\s*(?:#+\s*)?[\*\_]*(?:Ans(?:wer)?\s*[\.:\-]*(?:\s*(?:No\.?|Number)?\s*1)?)\b',
-                full_text,
-                re.IGNORECASE
-            ))
-            if fallback_matches:
-                content = full_text[fallback_matches[-1].start():]
-            else:
-                content = full_text
+            content = f"Failed to parse assignment. Template is tampered with."
 
         return re.sub(r'\n{3,}', '\n\n', content).strip()

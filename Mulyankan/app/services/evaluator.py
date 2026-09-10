@@ -11,62 +11,50 @@ client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 def decompose_submission_qa(markdown_text: str, course_code: str = "") -> List[Dict[str, Any]]:
     #Captures question number, question text and student answer body
-    qa_pattern = re.compile(
-        r'(?:^|\n)\s*'
-        r'(?:#+\s*)?'
-        r'[\*\_]*'
-        r'(?:Q|Question)?\s*[\.\:\-]?\s*'
-        r'(\d+\s*(?:\([a-zA-Z0-9]+\)|[a-zA-Z]|\.\d+)?)'
-        r'[\.\:\-\s\*\_]+'
-        r'(.*?)\s*'
-        r'(?:\n+\s*)'
-        r'(?:#+\s*)?'
-        r'[\*\_]*'
-        r'(?:<[a-z0-9]+>)*'
-        r'Ans(?:wer)?'
-        r'(?:<\/[a-z0-9]+>)*'
-        r'[\s\:\.\-\*\_]*\n+'
-        r'([\s\S]*?)'
-        r'(?=(?:\n+\s*(?:#+\s*)?[\*\_]*(?:Q|Question)?\s*[\.\:\-]?\s*\d+[\.\:\-\s\*\_]+)|\Z)',
+    q_header_pattern = re.compile(
+        r'^\s*(?:#+\s*)?[\*\_]*(?:Q|Question)\s*\.?\s*'
+        r'(\d+(?:\s*\.?\s*\(?[a-zA-Z0-9]+\)?)?)'
+        r'[\)\.\:\-\s\*\_]*',
+        re.IGNORECASE | re.MULTILINE
+    )
+
+    answer_block_pattern = re.compile(
+        r'Ans(?:wer)?(?:\s*\(do\s+not\s+edit\s+this\s+cell\))?',
         re.IGNORECASE
     )
 
+    matches = list(q_header_pattern.finditer(markdown_text))
     qa_units = []
+
     schemes = app.services.scheme_manager.load_schemes()
     course_data = schemes.get(course_code.upper(), {})
 
-    for match in qa_pattern.finditer(markdown_text):
+    for i, match in enumerate(matches):
         raw_q_num = match.group(1).strip()
-        q_text = match.group(2).strip()
-        ans_body = match.group(3).strip()
+        start_pos = match.end()
+        end_pos = matches[i + 1].start() if i + 1 < len(matches) else len(markdown_text)
 
-        #Cleaning formatting
-        q_text = re.sub(r'\s+', ' ', q_text)
-        q_text = re.sub(r'[\*_]*\(\s*\d+\s*marks?\s*\)[\*_]*', '', q_text, flags=re.IGNORECASE).strip()
-        q_text = q_text.strip('*_ ')
+        block_text = markdown_text[start_pos:end_pos]
 
-        #Normalizing question number for looking up in assignment_schemes.json
+        ans_marker = answer_block_pattern.search(block_text)
+        if ans_marker:
+            ans_body = block_text[ans_marker.end():].strip()
+
         canonical_q_num = app.services.scheme_manager.normalize_q_num(raw_q_num)
-        max_marks = app.services.scheme_manager.get_question_max_marks(course_data, canonical_q_num, default=20.0)
+        max_marks = app.services.scheme_manager.get_question_max_marks(course_data, canonical_q_num, default=0.0)
+        q_text = app.services.scheme_manager.get_question_text(course_data, canonical_q_num, default="")
 
         qa_units.append({
-            "question_number": raw_q_num,
-            "canonical_number": canonical_q_num, 
-            "max_marks": max_marks,
-            "question_text": q_text,
-            "student_answer": ans_body,
-            #audit_trail placeholders to be updated later
-            "scores_normalized": {
-                "content": 0.0,
-                "presentation": 0.0,
-                "linguistic": 0.0
-            },
-            "score_awarded": 0.0,
-            "feedback": "",
-            "citations": []
-        })
+                    "question_number": raw_q_num,
+                    "canonical_number": canonical_q_num, 
+                    "max_marks": max_marks,
+                    "question_text": q_text,
+                    "student_answer": ans_body,
+                })
 
     return qa_units
+
+        
 
 def evaluate_qa_unit(question_text: str, student_answer: str, max_marks: float, context_chunks: List[Dict[str, Any]]) -> Dict[str, Any]:
     #Evaluates a student's question-answer pair and returns scoring and audit_trail
