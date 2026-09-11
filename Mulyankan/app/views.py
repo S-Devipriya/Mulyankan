@@ -9,8 +9,9 @@ from django.contrib import messages
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from app.decorators import admin_required
 from django.db import IntegrityError
-from app.models import AssignmentSubmission, EvaluationResult
+from app.models import AssignmentSubmission, EvaluationResult, EvaluationBatch
 from pathlib import Path
+import json
 
 # Create your views here.
 User = get_user_model()
@@ -62,7 +63,12 @@ def login_user(request):
                 request.session.set_expiry(0)
             else:
                 request.session.set_expiry(1209600)  # 2 weeks in seconds
-            return redirect('dashboard')
+            if user.role == 'Evaluator':
+                return redirect('dashboard')
+            elif user.role == 'Admin' or user.is_superuser:
+                return redirect('admin_dashboard')
+            else:
+                return redirect('registration_waiting_page')
         else:
             messages.error(request, 'Invalid email or password. Please try again.')
     
@@ -109,4 +115,21 @@ def stream_assignment_pdf(request, pk):
 
 @admin_required
 def admin_dashboard(request):
-    return render(request, 'admin_dashboard.html')
+    schemes_count = 0
+    try:
+        with open(settings.BASE_DIR / 'data/assignment_schemes.json', 'r') as f:
+            schemes_data = json.load(f)
+            schemes_count = len(schemes_data) if isinstance(schemes_data, dict) or isinstance(schemes_data, list) else 0
+    except (FileNotFoundError, json.JSONDecodeError):
+        schemes_count = 0
+    context = {
+        'total_batches': EvaluationBatch.objects.count(),
+        'total_submissions': AssignmentSubmission.objects.count(),
+        'unassigned_count': AssignmentSubmission.objects.filter(evaluator__isnull=True).count(),
+        'total_schemes': schemes_count,
+    }
+    return render(request, 'admin_dashboard.html', context)
+
+@login_required
+def registration_waiting(request):
+    return render(request, 'registration_waiting_page.html')

@@ -9,9 +9,10 @@ class User(AbstractUser):
     ROLE_CHOICES = (
         ('Admin', 'Admin'),
         ('Evaluator', 'Evaluator'),
+        ('User', 'User'),
     )
     email = models.EmailField(unique=True)
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='Evaluator')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='User')
 
     REQUIRED_FIELDS = ['email', 'role']
 
