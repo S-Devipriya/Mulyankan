@@ -82,6 +82,19 @@ a:hover {
     box-shadow: 0 4px 10px rgba(34, 123, 155, 0.25);
 }
 
+.btn-signin.active {
+    background-color: #227B9B;
+    border-color: #227B9B;
+    color: #FFFFFF;
+    box-shadow: 0 4px 10px rgba(34, 123, 155, 0.25);
+}
+
+.btn-signin.active:hover {
+    background-color: #227B9B;
+    border-color: #227B9B;
+    color: #FFFFFF;
+}
+
 /* Main Content Container */
 .main-container {
     flex: 1;
@@ -110,6 +123,113 @@ a:hover {
 }
 
 .user-msg {
+    color: #1B365D;;
+    font-size: 0.95rem;
+    font-weight: 500;
+    user-select: none;
+}
+
+.nav-divider {
+    height: 20px;
+    width: 1px;
+    background-color: rgba(34, 123, 155, 0.25);
+}
+
+.nav-link-item {
+    color: #1B365D;
+    font-weight: 700;
+    font-size: 0.95rem;
     text-decoration: none;
-    font-weight: bold;
+    padding: 0.4rem 0;
+    position: relative;
+    transition: color 0.2s ease;
+}
+
+.nav-link-item:hover {
+    color: #227B9B;
+    background-color: rgba(34, 123, 155, 0.1);
+}
+
+.nav-link-item.active {
+    color: #227B9B;
+}
+
+.nav-link-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #227B9B;
+    border-radius: 2px;
+}
+
+.nav-menu-btn {
+    background: transparent;
+    border: none;
+    font-weight: 700;
+    color: #1B365D;
+    padding: 0.35rem 0.6rem;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.nav-menu-btn:hover {
+    color: #227B9B;
+    background-color: rgba(34, 123, 155, 0.1);
+}
+
+.nav-menu-btn i {
+    -webkit-text-stroke: 0.8px #1B365D;
+}
+
+.nav-menu-btn:hover i {
+    -webkit-text-stroke: 0.8px #227B9B;
+}
+
+.dropdown-item {
+    color: #1B365D;
+    font-weight: 600;
+}
+
+.metric-card {
+    border: 1px solid rgba(34, 123, 155, 0.15) !important;
+    border-radius: 10px;
+    background-color: #FFFFFF;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(27, 54, 93, 0.08) !important;
+}
+
+.text-navy {
+    color: #1B365D;
+}
+
+.fs-7 {
+    font-size: 0.78rem;
+    letter-spacing: 0.5px;
+}
+
+.metric-icon-wrap {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: rgba(34, 123, 155, 0.1);
+    color: #227B9B;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+}
+
+.metric-icon-wrap.icon-warning {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
 }

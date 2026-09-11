@@ -24,31 +24,56 @@
                     <span class="brand-subtitle">Context-Aware Evaluation</span>
                 </div>
             </a>
+            
             <div class="ms-auto d-flex align-items-center">
             {% if request.resolver_match.url_name not in 'login register' %}
-                <div class="nav-links">
+                <div class="nav-links d-flex align-items-center gap-3">
                 {% if user.is_authenticated %}
                     <!-- Username link for profile management -->
-                    <a href="#" class="user-msg mx-3">
-                        Welcome, {{ user.username }}
-                    </a>
-                    <!-- Dashboard / Authenticated view -->
-                    <a href="{% url 'dashboard' %}" class="btn btn-signin align-items-center gap-2">
-                        <span>Dashboard</span>
-                    </a>
-                    <a href="{% url 'result' %}" class="btn btn-signin align-items-center mx-3 gap-2">
-                        <span>Results</span>
-                    </a>
-                    <!-- Secure POST form for Logout -->
-                    <form method="POST" action="{% url 'logout' %}" style="display: inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-signin align-items-center">
-                            <span>Log Out</span>
+                    <span class="user-msg">
+                        Welcome, {{ user.username }} 
+                        <i class="bi bi-person-circle fs-5 mx-1"></i>
+                    </span>
+
+                    <div class="nav-divider"></div>
+
+                    {% if user.role == 'Admin' or user.is_superuser %}
+                        <a href="{% url 'admin_dashboard' %}" class="nav-link-item {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+                            <span>Admin Dashboard</span>
+                        </a>
+                    {% endif %}
+
+                    {% if user.role == 'Evaluator' or user.is_superuser %}
+                        <a href="{% url 'dashboard' %}" class="nav-link-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                            <span>Evaluator Dashboard</span>
+                        </a>
+                    {% endif %}
+                    
+                    <div class="dropdown">
+                        <button class="nav-menu-btn" type="button" id="navMenuDropdown" data-bs-toggle="dropdown">
+                            <i class="bi bi-list fs-4"></i>
                         </button>
-                    </form>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item {% if request.resolver_match.url_name == 'result' %}active{% endif %}" href="{% url 'result' %}">
+                                    <i class="bi bi-file-earmark-bar-graph me-2"></i>Results
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <!-- Secure POST form for Logout -->
+                                <form method="POST" action="{% url 'logout' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="bi bi-box-arrow-right me-2"></i>Log Out
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
                     {% else %}
                     <!-- Homepage / Unauthenticated view -->
-                    <a href="{% url 'login' %}" class="btn btn-signin d-flex align-items-center">
+                    <a href="{% url 'login' %}" class="btn btn-signin">
                         <span>Log In</span>
                     </a>
                     {% endif %}
