@@ -11,4 +11,6 @@ urlpatterns = [
     path('result', views.result_page, name='result'),
     path('assignment/<int:pk>/pdf/', views.view_assignment, name='view_assignment'),
     path('assignment/<int:pk>/stream/', views.stream_assignment_pdf, name='stream_assignment_pdf'),
+    path('admin-dashboard', views.admin_dashboard, name='admin_dashboard'),
+    path('registration_waiting_page', views.registration_waiting, name='registration_waiting_page'),
 ]
