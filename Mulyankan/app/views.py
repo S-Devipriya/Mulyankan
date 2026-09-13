@@ -9,7 +9,7 @@ from django.contrib import messages
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from app.decorators import admin_required
 from django.db import IntegrityError
-from app.models import AssignmentSubmission, EvaluationResult, EvaluationBatch
+from app.models import AssignmentSubmission, EvaluationResult, EvaluationBatch, EvaluatorExpertise, Course
 from pathlib import Path
 import json
 
@@ -158,6 +158,9 @@ def admin_dashboard(request):
         if submissions.exists() and not submissions.filter(status='Pending Review').exists():
             batches_ready_to_export += 1
 
+    evaluators = User.objects.filter(role='Evaluator')
+    unassigned_submissions = AssignmentSubmission.objects.filter(evaluator__isnull=True)
+
     context = {
         'total_batches': EvaluationBatch.objects.count(),
         'assignments': AssignmentSubmission.objects.count(),
@@ -175,9 +178,42 @@ def admin_dashboard(request):
             'pending_extraction': batches_pending_extraction,
             'active': batches_active,
             'ready_to_export': batches_ready_to_export,
-        }
+        },
+        'evaluators': evaluators,
+        'unassigned_submissions': unassigned_submissions,
+        'all_courses': Course.objects.all().order_by('course_code')
     }
     return render(request, 'admin_dashboard.html', context)
+
+@admin_required
+def assign_evaluator(request):
+    if request.method == 'POST':
+        submission_id = request.POST.get('submission_id')
+        evaluator_id = request.POST.get('evaluator_id')
+        
+        submission = get_object_or_404(AssignmentSubmission, id=submission_id)
+        evaluator = get_object_or_404(User, id=evaluator_id)
+        
+        submission.evaluator = evaluator
+        submission.save()
+        
+    return redirect('admin_dashboard')
+
+@admin_required
+def update_evaluator_expertise(request):
+    if request.method == 'POST':
+        evaluator_id = request.POST.get('evaluator_id')
+        selected_course_ids = request.POST.getlist('course_ids')
+        evaluator = get_object_or_404(User, id=evaluator_id, role='Evaluator')
+
+        selected_courses = Course.objects.filter(id__in=selected_course_ids)
+        EvaluatorExpertise.objects.filter(user=evaluator).exclude(course__in=selected_courses).delete()
+        for course in selected_courses:
+            EvaluatorExpertise.objects.get_or_create(user=evaluator, course=course)
+
+        messages.success(request, f"Updated expertise mappings for {evaluator.username}.")
+
+    return redirect('admin_dashboard')
 
 @login_required
 def registration_waiting(request):

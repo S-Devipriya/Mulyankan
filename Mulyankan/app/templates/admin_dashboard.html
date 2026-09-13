@@ -195,6 +195,188 @@
             </div>
 
         </div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    
+                    <!-- Tab Headers -->
+                    <div class="card-header bg-white border-bottom-0 pt-3 px-4">
+                        <ul class="nav nav-tabs card-header-tabs" id="adminTab" role="tablist">
+                            
+                            <!-- Tab 1: Ingestion & Pipeline -->
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active fw-medium text-navy" id="pipeline-tab" data-bs-toggle="tab" data-bs-target="#pipeline-pane" type="button" role="tab">
+                                    <i class="bi bi-cpu me-2"></i>Ingestion & Processing
+                                </button>
+                            </li>
+
+                            <!-- Tab 2: Schemes & Courses -->
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link fw-medium text-navy" id="schemes-tab" data-bs-toggle="tab" data-bs-target="#schemes-pane" type="button" role="tab">
+                                    <i class="bi bi-filetype-json me-2"></i>Schemes & Metadata
+                                </button>
+                            </li>
+
+                            <!-- Tab 3: Evaluator Allocation -->
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link fw-medium text-navy" id="allocation-tab" data-bs-toggle="tab" data-bs-target="#allocation-pane" type="button" role="tab">
+                                    <i class="bi bi-person-check me-2"></i>Evaluator Allocation
+                                </button>
+                            </li>
+
+                            <!-- Tab 4: Results & Export -->
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link fw-medium text-navy" id="export-tab" data-bs-toggle="tab" data-bs-target="#export-pane" type="button" role="tab">
+                                    <i class="bi bi-download me-2"></i>Results & Export
+                                </button>
+                            </li>
+
+                        </ul>
+                    </div>
+
+                    <!-- Tab Content Panes -->
+                    <div class="card-body p-4">
+                        <div class="tab-content" id="adminTabContent">
+                            
+                            <!-- Pane 1: Ingestion & Processing -->
+                            <div class="tab-pane fade" id="allocation-pane" role="tabpanel" aria-labelledby="allocation-tab">
+                                <div class="row g-4">
+                                    
+                                    <!-- Left Panel: Evaluator Expertise Configuration -->
+                                    <div class="col-12 col-lg-5">
+                                        <div class="card border-0 bg-light p-3 h-100">
+                                            <div class="card-body">
+                                                <h6 class="fw-bold text-navy mb-3">
+                                                    <i class="bi bi-person-gear me-2 text-primary"></i>Evaluator Expertise
+                                                </h6>
+                                                <p class="text-muted fs-7 mb-3">Select evaluator and check qualified courses.</p>
+                                                
+                                                <form method="POST" action="{% url 'update_evaluator_expertise' %}">
+                                                    {% csrf_token %}
+                                                    
+                                                    <!-- Evaluator Selector -->
+                                                    <div class="mb-3">
+                                                        <label class="form-label fs-7 fw-medium text-secondary">Select Evaluator</label>
+                                                        <select name="evaluator_id" class="form-select form-select-sm" required>
+                                                            <option value="" selected disabled>Choose evaluator...</option>
+                                                            {% for evaluator in evaluators %}
+                                                                <option value="{{ evaluator.id }}">{{ evaluator.get_full_name|default:evaluator.username }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+
+                                                    <!-- Course Checklist Container -->
+                                                    <div class="mb-3">
+                                                        <label class="form-label fs-7 fw-medium text-secondary d-block">Assign Courses</label>
+                                                        <div class="border rounded bg-white p-2" style="max-height: 180px; overflow-y: auto;">
+                                                            {% for course in all_courses %}
+                                                            <div class="form-check fs-7 py-1">
+                                                                <input class="form-check-input" type="checkbox" name="course_ids" value="{{ course.id }}" id="course_{{ course.id }}">
+                                                                <label class="form-check-label text-dark" for="course_{{ course.id }}">
+                                                                    <strong>{{ course.course_code }}</strong> <span class="text-muted">({{ course.course_name }})</span>
+                                                                </label>
+                                                            </div>
+                                                            {% empty %}
+                                                            <span class="text-muted fs-8">No courses available in system.</span>
+                                                            {% endfor %}
+                                                        </div>
+                                                    </div>
+
+                                                    <button type="submit" class="btn btn-sm btn-primary w-100 mt-2">
+                                                        <i class="bi bi-check2-circle me-1"></i> Save Expertise
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Right Panel: Unassigned Submissions Queue -->
+                                    <div class="col-12 col-lg-8">
+                                        <div class="d-flex align-items-center justify-content-between mb-3">
+                                            <h6 class="fw-bold text-navy mb-0">
+                                                <i class="bi bi-hourglass-split me-2 text-warning"></i>Pending Allocation Queue
+                                            </h6>
+                                            <span class="badge bg-warning text-dark fs-7 px-3">
+                                                {{ unassigned_submissions|length }} Pending
+                                            </span>
+                                        </div>
+
+                                        {% if unassigned_submissions %}
+                                        <div class="table-responsive">
+                                            <table class="table table-hover align-middle border-top">
+                                                <thead class="table-light fs-7 text-uppercase">
+                                                    <tr>
+                                                        <th scope="col">Submission ID</th>
+                                                        <th scope="col">Batch</th>
+                                                        <th scope="col">Course</th>
+                                                        <th scope="col" class="text-end">Assign Evaluator</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="fs-7">
+                                                    {% for sub in unassigned_submissions %}
+                                                    <tr>
+                                                        <td class="fw-medium text-navy">{{ sub.submission_id|default:sub.id }}</td>
+                                                        <td><span class="badge bg-light text-dark border">{{ sub.batch }}</span></td>
+                                                        <td><span class="fw-semibold text-secondary">{{ sub.course }}</span></td>
+                                                        <td class="text-end">
+                                                            <form method="POST" action="{% url 'assign_evaluator' %}" class="d-inline-flex gap-2">
+                                                                {% csrf_token %}
+                                                                <input type="hidden" name="submission_id" value="{{ sub.id }}">
+                                                                <select name="evaluator_id" class="form-select form-select-sm" required style="max-width: 160px;">
+                                                                    <option value="" selected disabled>Select...</option>
+                                                                    {% for evaluator in evaluators %}
+                                                                        <option value="{{ evaluator.id }}">{{ evaluator.username }}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                                <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                                    Assign
+                                                                </button>
+                                                            </form>
+                                                        </td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        {% else %}
+                                        <div class="text-center py-5 border rounded bg-light">
+                                            <i class="bi bi-check-circle-fill text-success fs-3 d-block mb-2"></i>
+                                            <span class="text-muted fs-7">All submissions have been allocated to evaluators.</span>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <!-- Pane 2: Schemes & Courses -->
+                            <div class="tab-pane fade" id="schemes-pane" role="tabpanel" aria-labelledby="schemes-tab">
+                                <h6 class="fw-bold text-navy mb-3">Metadata & Scheme Configuration</h6>
+                                <p class="text-muted fs-7">Manage `courses.json` definitions and `assignment_schemes.json` grading criteria.</p>
+                                <!-- Content for Tab 2 will go here -->
+                            </div>
+
+                            <!-- Pane 3: Evaluator Allocation -->
+                            <div class="tab-pane fade" id="allocation-pane" role="tabpanel" aria-labelledby="allocation-tab">
+                                <h6 class="fw-bold text-navy mb-3">Evaluator Expertise & Assignment Allocation</h6>
+                                <p class="text-muted fs-7">Set evaluator course expertise and assign pending script allocations.</p>
+                                <!-- Content for Tab 3 will go here -->
+                            </div>
+
+                            <!-- Pane 4: Results & Export -->
+                            <div class="tab-pane fade" id="export-pane" role="tabpanel" aria-labelledby="export-tab">
+                                <h6 class="fw-bold text-navy mb-3">Evaluated Batch Results</h6>
+                                <p class="text-muted fs-7">Review fully evaluated batches and trigger JSON exports.</p>
+                                <!-- Content for Tab 4 will go here -->
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
     </div>
 </main>
 {% endblock %}
