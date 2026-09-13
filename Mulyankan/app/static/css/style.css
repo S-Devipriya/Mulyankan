@@ -229,11 +229,6 @@ a:hover {
     font-size: 1.35rem;
 }
 
-.metric-icon-wrap.icon-warning {
-    background-color: rgba(220, 53, 69, 0.1);
-    color: #dc3545;
-}
-
 .status-indicator {
     width: 9px;
     height: 9px;
