@@ -155,7 +155,7 @@ def admin_dashboard(request):
     batches_ready_to_export = 0
     for batches in EvaluationBatch.objects.all():
         submissions = AssignmentSubmission.objects.filter(batch=batches.id)
-        if submissions.exists() and not submissions.exclude(status='Reviewed').exists():
+        if submissions.exists() and not submissions.filter(status='Pending Review').exists():
             batches_ready_to_export += 1
 
     context = {
