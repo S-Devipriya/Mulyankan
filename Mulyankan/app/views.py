@@ -116,17 +116,66 @@ def stream_assignment_pdf(request, pk):
 @admin_required
 def admin_dashboard(request):
     schemes_count = 0
+    courses = 0
+    textbooks = 0
     try:
         with open(settings.BASE_DIR / 'data/assignment_schemes.json', 'r') as f:
             schemes_data = json.load(f)
             schemes_count = len(schemes_data) if isinstance(schemes_data, dict) or isinstance(schemes_data, list) else 0
     except (FileNotFoundError, json.JSONDecodeError):
         schemes_count = 0
+
+    try:
+        with open(settings.BASE_DIR / 'data/courses.json', 'r') as f:
+            courses = json.load(f)
+            courses = len(courses) if isinstance(courses, dict) or isinstance(courses, list) else 0
+    except (FileNotFoundError, json.JSONDecodeError):
+        courses = 0
+
+    textbooks_dir = Path(settings.BASE_DIR) / 'data' / 'textbooks'
+    textbooks = len([p for p in textbooks_dir.iterdir() if p.is_dir()]) if textbooks_dir.exists() else 0
+
+    assignments_root = Path(settings.BASE_DIR) / 'data' / 'sample_submissions'
+    disk_file_count = 0
+    if assignments_root.exists():
+        #counts all pdf/document files across batch subfolders
+        disk_file_count = sum(1 for p in assignments_root.rglob('*') if p.is_file() and not p.name.startswith('.'))
+    
+    db_submissions_count = AssignmentSubmission.objects.count()
+    #unextracted files count
+    pending_extraction = max(0, disk_file_count - db_submissions_count)
+    pending_allocation = AssignmentSubmission.objects.filter(evaluator__isnull=True).count()
+    under_review = EvaluationResult.objects.filter(human_final_score__isnull=True).count()
+    evaluated_count = EvaluationResult.objects.filter(human_final_score__isnull=False).count()
+
+    total_eval_batches = EvaluationBatch.objects.count()
+
+    batches_pending_extraction = EvaluationBatch.objects.filter(status='Processing').count()
+    batches_active = EvaluationBatch.objects.filter(status='Ready').count()
+    batches_ready_to_export = 0
+    for batches in EvaluationBatch.objects.all():
+        submissions = AssignmentSubmission.objects.filter(batch=batches.id)
+        if submissions.exists() and not submissions.exclude(status='Reviewed').exists():
+            batches_ready_to_export += 1
+
     context = {
         'total_batches': EvaluationBatch.objects.count(),
-        'total_submissions': AssignmentSubmission.objects.count(),
-        'unassigned_count': AssignmentSubmission.objects.filter(evaluator__isnull=True).count(),
+        'assignments': AssignmentSubmission.objects.count(),
+        'total_courses': courses,
         'total_schemes': schemes_count,
+        'textbooks': textbooks,
+        'assignment_stats': {
+            'pending_extraction': pending_extraction,
+            'pending_allocation': pending_allocation,
+            'under_review': under_review,
+            'evaluated': evaluated_count,
+        },
+        'batch_stats': {
+            'total': total_eval_batches,
+            'pending_extraction': batches_pending_extraction,
+            'active': batches_active,
+            'ready_to_export': batches_ready_to_export,
+        }
     }
     return render(request, 'admin_dashboard.html', context)
 
