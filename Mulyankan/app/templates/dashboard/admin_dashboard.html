@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} Mulyankan | Context-Aware Subjective Evaluation {% endblock %}
+
+{% block content %}
+<main class="main-container d-flex">
+    <div class="container-fluid px-4 py-4">
+
+        <!--Metric cards-->
+        {% include 'dashboard/partials/_metrics.html' %}
+
+        <!--Status of Assignments & Batches-->
+        {% include 'dashboard/partials/_status.html' %}
+
+        <!--Management Panels-->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+
+                    <!-- Tab Headers -->
+                    <div class="card-header bg-white border-bottom-0 pt-3 px-4">
+                        <ul class="nav nav-tabs card-header-tabs" id="adminTab" role="tablist">                            
+                            <!-- Tab 1: Ingestion & Pipeline -->
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active fw-medium text-navy" id="pipeline-tab" data-bs-toggle="tab" data-bs-target="#pipeline-pane" type="button" role="tab">
+                                    <i class="bi bi-cpu me-2"></i>Ingestion & Processing
+                                </button>
+                            </li>
+                            <!-- Tab 2: Schemes & Courses -->
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link fw-medium text-navy" id="schemes-tab" data-bs-toggle="tab" data-bs-target="#schemes-pane" type="button" role="tab">
+                                    <i class="bi bi-filetype-json me-2"></i>Schemes & Metadata
+                                </button>
+                            </li>
+                            <!-- Tab 3: Evaluator Allocation -->
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link fw-medium text-navy" id="allocation-tab" data-bs-toggle="tab" data-bs-target="#allocation-pane" type="button" role="tab">
+                                    <i class="bi bi-person-check me-2"></i>Evaluator Allocation
+                                </button>
+                            </li>
+                            <!-- Tab 4: Results & Export -->
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link fw-medium text-navy" id="export-tab" data-bs-toggle="tab" data-bs-target="#export-pane" type="button" role="tab">
+                                    <i class="bi bi-download me-2"></i>Results & Export
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Tab Content Panes -->
+                    <div class="card-body p-4">
+                        <div class="tab-content" id="adminTabContent">
+                            <!-- Pane 1: Ingestion & Processing -->
+                            {% include 'dashboard/partials/_tab_ingestion.html' %}
+                            <!-- Pane 2: Schemes & Courses -->
+                            {% include 'dashboard/partials/_tab_schemes.html' %}
+                            <!-- Pane 3: Evaluator Allocation -->
+                            {% include 'dashboard/partials/_tab_evaluator_allocation.html' %}
+                            <!-- Pane 4: Results & Export -->
+                            {% include 'dashboard/partials/_tab_evaluator_allocation.html' %}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</main>
+
+<script src="{% static 'js/script.js' %}"></script>
+{% endblock %}

@@ -87,7 +87,7 @@ def dashboard(request):
     assignments = {
         'assignment': AssignmentSubmission.objects.all()
     }
-    return render(request, 'dashboard.html', assignments)
+    return render(request, 'dashboard/dashboard.html', assignments)
 
 @login_required
 def result_page(request):
@@ -191,7 +191,7 @@ def admin_dashboard(request):
         'expertise_map': json.dumps(expertise_map),
         'all_batches': EvaluationBatch.objects.all().order_by('-upload_date'),
     }
-    return render(request, 'admin_dashboard.html', context)
+    return render(request, 'dashboard/admin_dashboard.html', context)
 
 @admin_required
 def assign_evaluator(request):

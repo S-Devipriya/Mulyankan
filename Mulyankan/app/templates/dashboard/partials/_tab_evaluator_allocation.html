@@ -1,0 +1,109 @@
+<div class="tab-pane fade" id="allocation-pane" role="tabpanel" aria-labelledby="allocation-tab">
+    <h6 class="fw-bold text-navy mb-3">Evaluator Expertise & Assignment Allocation</h6>
+    <p class="text-muted fs-7">Set evaluator course expertise and assign pending script allocations.</p>
+    <div class="row g-4">
+        <!-- Left Panel: Evaluator Expertise Configuration -->
+        <div class="col-12 col-lg-5">
+            <div class="card border-0 bg-light p-3 h-100">
+                <div class="card-body">
+                    <h6 class="fw-bold text-navy mb-3">
+                        <i class="bi bi-person-gear me-2 text-primary"></i>Evaluator Expertise
+                    </h6>
+                    <p class="text-muted fs-7 mb-3">Select evaluator and check qualified courses.</p>
+                    
+                    <form method="POST" action="{% url 'update_evaluator_expertise' %}">
+                        {% csrf_token %}
+                        
+                        <!-- Evaluator Selector -->
+                        <div class="mb-3">
+                            <label class="form-label fs-7 fw-medium text-secondary">Select Evaluator</label>
+                            <select name="evaluator_id" id="evaluatorSelect" class="form-select form-select-sm" data-expertise-map="{{ expertise_map }}" required>
+                                <option value="" selected disabled>Choose evaluator...</option>
+                                {% for evaluator in evaluators %}
+                                    <option value="{{ evaluator.id }}">{{ evaluator.username }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Course Checklist Container -->
+                        <div class="mb-3">
+                            <label class="form-label fs-7 fw-medium text-secondary d-block">Assign Courses</label>
+                            <div class="border rounded bg-white p-2" style="max-height: 180px; overflow-y: auto;">
+                                {% for course in all_courses %}
+                                <div class="form-check fs-7 py-1">
+                                    <input class="form-check-input" type="checkbox" name="course_ids" value="{{ course.id }}" id="course_{{ course.id }}">
+                                    <label class="form-check-label text-dark" for="course_{{ course.id }}">
+                                        <strong>{{ course.course_code }}</strong> <span class="text-muted">({{ course.course_name }})</span>
+                                    </label>
+                                </div>
+                                {% empty %}
+                                <span class="text-muted fs-8">No courses available in system.</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-sm btn-primary w-100 mt-2">
+                            <i class="bi bi-check2-circle me-1"></i> Save Expertise
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Unassigned Submissions Queue -->
+        <div class="col-12 col-lg-7">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h6 class="fw-bold text-navy mb-0">
+                    <i class="bi bi-hourglass-split me-2 text-warning"></i>Pending Allocation Queue
+                </h6>
+                <span class="badge bg-warning text-dark fs-7 px-3">
+                    {{ unassigned_submissions|length }} Pending
+                </span>
+            </div>
+
+            {% if unassigned_submissions %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle border-top">
+                    <thead class="table-light fs-7 text-uppercase">
+                        <tr>
+                            <th scope="col">Submission ID</th>
+                            <th scope="col">Batch</th>
+                            <th scope="col">Course</th>
+                            <th scope="col" class="text-end">Assign Evaluator</th>
+                        </tr>
+                    </thead>
+                    <tbody class="fs-7">
+                        {% for sub in unassigned_submissions %}
+                        <tr>
+                            <td class="fw-medium text-navy">{{ sub.submission_id|default:sub.id }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ sub.batch }}</span></td>
+                            <td><span class="fw-semibold text-secondary">{{ sub.course }}</span></td>
+                            <td class="text-end">
+                                <form method="POST" action="{% url 'assign_evaluator' %}" class="d-inline-flex gap-2">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="submission_id" value="{{ sub.id }}">
+                                    <select name="evaluator_id" class="form-select form-select-sm" required style="max-width: 160px;">
+                                        <option value="" selected disabled>Select...</option>
+                                        {% for evaluator in evaluators %}
+                                            <option value="{{ evaluator.id }}">{{ evaluator.username }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">
+                                        Assign
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5 border rounded bg-light">
+                <i class="bi bi-check-circle-fill text-success fs-3 d-block mb-2"></i>
+                <span class="text-muted fs-7">All submissions have been allocated to evaluators.</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
