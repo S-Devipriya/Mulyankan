@@ -11,6 +11,12 @@ urlpatterns = [
     path('result', views.result_page, name='result'),
     path('assignment/<int:pk>/pdf/', views.view_assignment, name='view_assignment'),
     path('assignment/<int:pk>/stream/', views.stream_assignment_pdf, name='stream_assignment_pdf'),
-    path('admin-dashboard', views.admin_dashboard, name='admin_dashboard'),
+    path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('registration_waiting_page', views.registration_waiting, name='registration_waiting_page'),
+    path('admin-dashboard/assign-evaluator/', views.assign_evaluator, name='assign_evaluator'),
+    path('admin-dashboard/update-expertise/', views.update_evaluator_expertise, name='update_evaluator_expertise'),
+    path('admin-dashboard/upload-batchwise-assignments/', views.upload_batchwise_assignments, name='upload_batchwise_assignments'),
+    path('admin-dashboard/upload-textbooks/', views.upload_textbooks, name="upload_textbooks"),
+    path('admin-dashboard/extract-submissions/', views.run_extract_submissions, name='run_extract_submissions'),
+    path('admin-dashboard/ingest-textbooks/', views.run_ingest_textbooks, name='run_ingest_textbooks'),
 ]
