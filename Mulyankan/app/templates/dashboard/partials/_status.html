@@ -1,55 +1,44 @@
 <div class="row g-4 mb-4">
     <!-- Left Panel: Assignment -->
     <div class="col-12 col-lg-6">
-        <div class="card border-0 shadow-sm h-100 p-3">
+        <div class="card status-card">
             <div class="card-body">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <h6 class="fw-bold text-navy mb-0">
-                        <i class="bi bi-file-earmark-bar-graph me-2 text-primary"></i>Assignment Status
-                    </h6>
-                </div>
+                <h6 class="card-title">
+                    <i class="bi bi-file-earmark-bar-graph me-2"></i>Assignment Status
+                </h6>
 
                 <div class="list-group list-group-flush">
-                    <div class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-0">
+                    <div class="status-item">
                         <div class="d-flex align-items-center">
                             <span class="status-indicator bg-secondary me-2"></span>
-                            <span class="text-secondary fw-medium fs-7">Pending Extraction</span>
+                            <span class="status-label">Pending Extraction</span>
                         </div>
-                        <span class="badge rounded-pill bg-secondary fs-7 px-3">
-                            {{ assignment_stats.pending_extraction }}
-                        </span>
+                        <span class="badge rounded-pill bg-secondary px-3">{{ assignment_stats.pending_extraction|default:0 }}</span>
                     </div>
 
-                    <div class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-0">
+                    <div class="status-item">
                         <div class="d-flex align-items-center">
                             <span class="status-indicator bg-warning me-2"></span>
-                            <span class="text-secondary fw-medium fs-7">Pending Allocation</span>
+                            <span class="status-label">Pending Allocation</span>
                         </div>
-                        <span class="badge rounded-pill bg-warning text-dark fs-7 px-3">
-                            {{ assignment_stats.pending_allocation }}
-                        </span>
+                        <span class="badge rounded-pill bg-warning text-dark px-3">{{ assignment_stats.pending_allocation|default:0 }}</span>
                     </div>
 
-                    <div class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-0">
+                    <div class="status-item">
                         <div class="d-flex align-items-center">
                             <span class="status-indicator bg-info me-2"></span>
-                            <span class="text-secondary fw-medium fs-7">Under Review</span>
+                            <span class="status-label">Under Review</span>
                         </div>
-                        <span class="badge rounded-pill bg-info text-dark fs-7 px-3">
-                            {{ assignment_stats.under_review }}
-                        </span>
+                        <span class="badge rounded-pill bg-info text-dark px-3">{{ assignment_stats.under_review|default:0 }}</span>
                     </div>
 
-                    <div class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-0">
+                    <div class="status-item">
                         <div class="d-flex align-items-center">
                             <span class="status-indicator bg-success me-2"></span>
-                            <span class="text-secondary fw-medium fs-7">Evaluated</span>
+                            <span class="status-label">Evaluated</span>
                         </div>
-                        <span class="badge rounded-pill bg-success fs-7 px-3">
-                            {{ assignment_stats.evaluated }}
-                        </span>
+                        <span class="badge rounded-pill bg-success px-3">{{ assignment_stats.evaluated|default:0 }}</span>
                     </div>
-
                 </div>
             </div>
         </div>
@@ -57,56 +46,44 @@
 
     <!-- Right Panel: Batch Status -->
     <div class="col-12 col-lg-6">
-        <div class="card border-0 shadow-sm h-100 p-3">
+        <div class="card status-card">
             <div class="card-body">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <h6 class="fw-bold text-navy mb-0">
-                        <i class="bi bi-layers-half me-2 text-primary"></i>Batch Status
-                    </h6>
-                </div>
+                <h6 class="card-title">
+                    <i class="bi bi-layers-half me-2"></i>Batch Status
+                </h6>
 
                 <div class="list-group list-group-flush">
-
-                    <div class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-0">
+                    <div class="status-item">
                         <div class="d-flex align-items-center">
                             <span class="status-indicator bg-secondary me-2"></span>
-                            <span class="text-secondary fw-medium fs-7">Total</span>
+                            <span class="status-label">Total</span>
                         </div>
-                        <span class="badge rounded-pill bg-secondary fs-7 px-3">
-                            {{ batch_stats.total|default:0 }}
-                        </span>
+                        <span class="badge rounded-pill bg-secondary px-3">{{ batch_stats.total|default:0 }}</span>
                     </div>
 
-                    <div class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-0">
+                    <div class="status-item">
                         <div class="d-flex align-items-center">
                             <span class="status-indicator bg-warning me-2"></span>
-                            <span class="text-secondary fw-medium fs-7">Pending Extraction</span>
+                            <span class="status-label">Pending Extraction</span>
                         </div>
-                        <span class="badge rounded-pill bg-warning text-dark fs-7 px-3">
-                            {{ batch_stats.pending_extraction }}
-                        </span>
+                        <span class="badge rounded-pill bg-warning text-dark px-3">{{ batch_stats.pending_extraction|default:0 }}</span>
                     </div>
 
-                    <div class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-0">
+                    <div class="status-item">
                         <div class="d-flex align-items-center">
                             <span class="status-indicator bg-info me-2"></span>
-                            <span class="text-secondary fw-medium fs-7">Active</span>
+                            <span class="status-label">Active</span>
                         </div>
-                        <span class="badge rounded-pill bg-info text-dark fs-7 px-3">
-                            {{ batch_stats.active }}
-                        </span>
+                        <span class="badge rounded-pill bg-info text-dark px-3">{{ batch_stats.active|default:0 }}</span>
                     </div>
 
-                    <div class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-0">
+                    <div class="status-item">
                         <div class="d-flex align-items-center">
                             <span class="status-indicator bg-success me-2"></span>
-                            <span class="text-secondary fw-medium fs-7">Ready to Export</span>
+                            <span class="status-label">Ready to Export</span>
                         </div>
-                        <span class="badge rounded-pill bg-success fs-7 px-3">
-                            {{ batch_stats.ready_to_export }}
-                        </span>
+                        <span class="badge rounded-pill bg-success px-3">{{ batch_stats.ready_to_export|default:0 }}</span>
                     </div>
-
                 </div>
             </div>
         </div>

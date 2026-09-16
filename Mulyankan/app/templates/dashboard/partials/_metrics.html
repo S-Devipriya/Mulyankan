@@ -1,10 +1,10 @@
-<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-5 g-3 mb-4">     
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-5 g-4 mb-4">     
     <div class="col">
-        <div class="card metric-card border-0 shadow-sm h-100">
-            <div class="card-body d-flex align-items-center justify-content-between">
+        <div class="card metric-card">
+            <div class="card-body">
                 <div>
-                    <span class="text-muted fw-medium fs-7 text-uppercase tracking-wide">Batches</span>
-                    <h3 class="fw-bold text-navy mt-1 mb-0">{{ total_batches|default:0 }}</h3>
+                    <span class="metric-label">Batches</span>
+                    <h3 class="metric-value">{{ total_batches|default:0 }}</h3>
                 </div>
                 <div class="metric-icon-wrap">
                     <i class="bi bi-collection-fill"></i>
@@ -12,12 +12,13 @@
             </div>
         </div>
     </div>
+
     <div class="col">
-        <div class="card metric-card border-0 shadow-sm h-100">
-            <div class="card-body d-flex align-items-center justify-content-between">
+        <div class="card metric-card">
+            <div class="card-body">
                 <div>
-                    <span class="text-muted fw-medium fs-7 text-uppercase tracking-wide">Assignments</span>
-                    <h3 class="fw-bold text-navy mt-1 mb-0">{{ assignments|default:0 }}</h3>
+                    <span class="metric-label">Assignments</span>
+                    <h3 class="metric-value">{{ assignments|default:0 }}</h3>
                 </div>
                 <div class="metric-icon-wrap">
                     <i class="bi bi-file-earmark-text-fill"></i>
@@ -25,12 +26,13 @@
             </div>
         </div>
     </div>
+
     <div class="col">
-        <div class="card metric-card border-0 shadow-sm h-100">
-            <div class="card-body d-flex align-items-center justify-content-between">
+        <div class="card metric-card">
+            <div class="card-body">
                 <div>
-                    <span class="text-muted fw-medium fs-7 text-uppercase tracking-wide">Courses</span>
-                    <h3 class="fw-bold text-navy mt-1 mb-0">{{ total_courses|default:0 }}</h3>
+                    <span class="metric-label">Courses</span>
+                    <h3 class="metric-value">{{ total_courses|default:0 }}</h3>
                 </div>
                 <div class="metric-icon-wrap">
                     <i class="bi bi-journal-bookmark-fill"></i>
@@ -38,12 +40,13 @@
             </div>
         </div>
     </div>
+
     <div class="col">
-        <div class="card metric-card border-0 shadow-sm h-100">
-            <div class="card-body d-flex align-items-center justify-content-between">
+        <div class="card metric-card">
+            <div class="card-body">
                 <div>
-                    <span class="text-muted fw-medium fs-7 text-uppercase tracking-wide">Assignment Schemes</span>
-                    <h3 class="fw-bold text-navy mt-1 mb-0">{{ total_schemes|default:0 }}</h3>
+                    <span class="metric-label">Assignment Schemes</span>
+                    <h3 class="metric-value">{{ total_schemes|default:0 }}</h3>
                 </div>
                 <div class="metric-icon-wrap">
                     <i class="bi bi-filetype-json"></i>
@@ -51,12 +54,13 @@
             </div>
         </div>
     </div>
+
     <div class="col">
-        <div class="card metric-card border-0 shadow-sm h-100">
-            <div class="card-body d-flex align-items-center justify-content-between">
+        <div class="card metric-card">
+            <div class="card-body">
                 <div>
-                    <span class="text-muted fw-medium fs-7 text-uppercase tracking-wide">Textbooks</span>
-                    <h3 class="fw-bold text-navy mt-1 mb-0">{{ textbooks|default:0 }}</h3>
+                    <span class="metric-label">Textbooks</span>
+                    <h3 class="metric-value">{{ textbooks|default:0 }}</h3>
                 </div>
                 <div class="metric-icon-wrap">
                     <i class="bi bi-book-half"></i>
