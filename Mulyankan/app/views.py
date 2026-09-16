@@ -167,6 +167,15 @@ def admin_dashboard(request):
         expertise_map[ev.id] = list(assigned_courses)
     unassigned_submissions = AssignmentSubmission.objects.filter(evaluator__isnull=True)
 
+    schemes_file = settings.BASE_DIR / 'data' / 'assignment_schemes.json'
+    schemes_map = {}
+    if schemes_file.exists():
+        with open(schemes_file, 'r', encoding='utf-8') as f:
+            try:
+                schemes_map = json.load(f)
+            except json.JSONDecodeError:
+                schemes_map = {}
+
     context = {
         'total_batches': EvaluationBatch.objects.count(),
         'assignments': AssignmentSubmission.objects.count(),
@@ -190,6 +199,9 @@ def admin_dashboard(request):
         'all_courses': Course.objects.all().order_by('course_code'),
         'expertise_map': json.dumps(expertise_map),
         'all_batches': EvaluationBatch.objects.all().order_by('-upload_date'),
+        'scheme_course_codes': list(schemes_map.keys()),
+        'schemes_json_map': json.dumps(schemes_map),
+        'result': EvaluationResult.objects.select_related('submission').all(),
     }
     return render(request, 'dashboard/admin_dashboard.html', context)
 
@@ -316,6 +328,78 @@ def run_ingest_textbooks(request):
                 messages.success(request, "Full textbook ingestion completed.")
         except Exception as e:
             messages.error(request, f"Error running ingest_textbooks: {str(e)}")
+
+    return redirect('admin_dashboard')
+
+@admin_required
+def update_courses_json(request):
+    if request.method == 'POST':
+        code = request.POST.get('course_code', '').strip().upper()
+        name = request.POST.get('course_name', '').strip()
+
+        if code and name:
+            file_path = settings.BASE_DIR / 'data' / 'courses.json'
+            courses_data = {}
+
+            if file_path.exists():
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    try:
+                        courses_data = json.load(f)
+                    except json.JSONDecodeError:
+                        courses_data = {}
+
+            courses_data[code] = {'course_name': name}
+
+            with open(file_path, 'w', encoding='utf-8') as f:
+                json.dump(courses_data, f, indent=4)
+
+            messages.success(request, f"Course '{code}' saved to courses.json.")
+
+    return redirect('admin_dashboard')
+
+
+def update_assignment_schemes_json(request):
+    if request.method == 'POST':
+        code = request.POST.get('course_code', '').strip().upper()
+        total_marks = float(request.POST.get('total_marks', 0.0))
+
+        # Retrieve array lists from submitted form
+        q_keys = request.POST.getlist('question_keys[]')
+        max_marks_list = request.POST.getlist('max_marks_list[]')
+        q_texts = request.POST.getlist('question_texts[]')
+
+        if code and q_keys:
+            file_path = settings.BASE_DIR / 'data' / 'assignment_schemes.json'
+            schemes_data = {}
+
+            if file_path.exists():
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    try:
+                        schemes_data = json.load(f)
+                    except json.JSONDecodeError:
+                        schemes_data = {}
+
+            # Initialize or retain existing course entry
+            if code not in schemes_data:
+                schemes_data[code] = {'total_marks': total_marks, 'questions': {}}
+            else:
+                schemes_data[code]['total_marks'] = total_marks
+                if 'questions' not in schemes_data[code]:
+                    schemes_data[code]['questions'] = {}
+
+            # Map all submitted question rows into the JSON structure
+            for key, max_m, text in zip(q_keys, max_marks_list, q_texts):
+                key_str = key.strip()
+                if key_str and text.strip():
+                    schemes_data[code]['questions'][key_str] = {
+                        'max_marks': float(max_m) if max_m else 0.0,
+                        'question_text': text.strip()
+                    }
+
+            with open(file_path, 'w', encoding='utf-8') as f:
+                json.dump(schemes_data, f, indent=4)
+
+            messages.success(request, f"Updated scheme for '{code}' with {len(q_keys)} question(s).")
 
     return redirect('admin_dashboard')
 
