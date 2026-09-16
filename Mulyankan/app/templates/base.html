@@ -44,7 +44,7 @@
                     {% endif %}
 
                     {% if user.role == 'Evaluator' or user.is_superuser %}
-                        <a href="{% url 'dashboard' %}" class="nav-link-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                        <a href="{% url 'evaluator_dashboard' %}" class="nav-link-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
                             <span>Evaluator Dashboard</span>
                         </a>
                     {% endif %}

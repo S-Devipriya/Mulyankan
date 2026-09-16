@@ -8,10 +8,11 @@ from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.core.management import call_command
 from django.views.decorators.clickjacking import xframe_options_sameorigin
-from app.decorators import admin_required
+from app.decorators import admin_required, evaluator_required
 from django.db import IntegrityError
 from app.models import AssignmentSubmission, EvaluationResult, EvaluationBatch, EvaluatorExpertise, Course
 from pathlib import Path
+from django.utils import timezone
 import json
 import zipfile
 
@@ -23,7 +24,12 @@ def welcome(request):
 
 def register_user(request):
     if request.user.is_authenticated:
-        return redirect('dashboard')
+        if request.user.role == 'Evaluator':
+            return redirect('evaluator_dashboard')
+        elif request.user.role == 'Admin' or request.user.is_superuser:
+            return redirect('admin_dashboard')
+        else:
+            return redirect('registration_waiting_page')
     
     if request.method == 'POST':
         username = request.POST.get('username','').strip()
@@ -50,7 +56,12 @@ def register_user(request):
 
 def login_user(request):
     if request.user.is_authenticated:
-        return redirect('dashboard')
+        if request.user.role == 'Evaluator':
+            return redirect('evaluator_dashboard')
+        elif request.user.role == 'Admin' or request.user.is_superuser:
+            return redirect('admin_dashboard')
+        else:
+            return redirect('registration_waiting_page')
 
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
@@ -66,7 +77,7 @@ def login_user(request):
             else:
                 request.session.set_expiry(1209600)  # 2 weeks in seconds
             if user.role == 'Evaluator':
-                return redirect('dashboard')
+                return redirect('evaluator_dashboard')
             elif user.role == 'Admin' or user.is_superuser:
                 return redirect('admin_dashboard')
             else:
@@ -81,13 +92,6 @@ def logout_user(request):
     logout(request)
     messages.info(request, 'You have been logged out.')
     return redirect('login')
-
-@login_required
-def dashboard(request):
-    assignments = {
-        'assignment': AssignmentSubmission.objects.all()
-    }
-    return render(request, 'dashboard/dashboard.html', assignments)
 
 @login_required
 def result_page(request):
@@ -357,7 +361,7 @@ def update_courses_json(request):
 
     return redirect('admin_dashboard')
 
-
+@admin_required
 def update_assignment_schemes_json(request):
     if request.method == 'POST':
         code = request.POST.get('course_code', '').strip().upper()
@@ -402,6 +406,90 @@ def update_assignment_schemes_json(request):
             messages.success(request, f"Updated scheme for '{code}' with {len(q_keys)} question(s).")
 
     return redirect('admin_dashboard')
+
+@evaluator_required
+def evaluator_dashboard(request):
+    user = request.user
+    
+    #retrieves all submissions assigned to this evaluator
+    assigned_submissions = AssignmentSubmission.objects.filter(evaluator=user).select_related('batch', 'course').order_by('batch__batch_name', 'id')
+
+    #groups submissions by EvaluationBatch
+    batch_queue = {}
+    for sub in assigned_submissions:
+        batch_id = sub.batch.id
+        if batch_id not in batch_queue:
+            batch_queue[batch_id] = {
+                'batch_name': sub.batch.batch_name,
+                'batch_status': sub.batch.status,
+                'submissions': [],
+                'pending_count': 0,
+                'reviewed_count': 0,
+            }
+        
+        batch_queue[batch_id]['submissions'].append(sub)
+        if sub.status == 'Pending Review':
+            batch_queue[batch_id]['pending_count'] += 1
+        else:
+            batch_queue[batch_id]['reviewed_count'] += 1
+
+    context = {
+        'batch_queue': batch_queue.values(),
+        'total_assigned': assigned_submissions.count(),
+        'total_pending': assigned_submissions.filter(status='Pending Review').count(),
+        'total_reviewed': assigned_submissions.filter(status='Reviewed').count(),
+    }
+    return render(request, 'dashboard/evaluator_dashboard.html', context)
+
+@evaluator_required
+def evaluate_submission(request, submission_id):
+    submission = get_object_or_404(
+        AssignmentSubmission.objects.select_related('course', 'batch'), 
+        id=submission_id, 
+        evaluator=request.user
+    )
+    
+    result = getattr(submission, 'evaluation_result', None)
+
+    batch_submissions = list(
+        AssignmentSubmission.objects.filter(
+            batch=submission.batch, 
+            evaluator=request.user
+        ).values_list('id', flat=True).order_by('id')
+    )
+    
+    current_idx = batch_submissions.index(submission.id)
+    prev_id = batch_submissions[current_idx - 1] if current_idx > 0 else None
+    next_id = batch_submissions[current_idx + 1] if current_idx < len(batch_submissions) - 1 else None
+
+    if request.method == 'POST':
+        human_score = request.POST.get('human_final_score')
+        remarks = request.POST.get('evaluator_remarks', '').strip()
+
+        if result and human_score:
+            result.human_final_score = float(human_score)
+            result.evaluator_remarks = remarks
+            result.reviewed_at = timezone.now()
+            result.save()
+
+            submission.status = 'Reviewed'
+            submission.save()
+
+            messages.success(request, f"Evaluation saved for Enrollment #{submission.enrollment_number}.")
+
+            #auto-advance to next submission in batch if available
+            if next_id:
+                return redirect('evaluate_submission', submission_id=next_id)
+            return redirect('evaluator_dashboard')
+
+    context = {
+        'submission': submission,
+        'result': result,
+        'prev_id': prev_id,
+        'next_id': next_id,
+        'audit_logic': result.audit_logic if result else [],
+    }
+    return render(request, 'dashboard/evaluation_splitview.html', context)
 
 @login_required
 def registration_waiting(request):
