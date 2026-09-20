@@ -14,6 +14,12 @@
                 Enrollment: <strong>{{ submission.enrollment_number }}</strong> 
                 <span class="status-label">({{ submission.course.course_code }})</span>
             </span>
+            <form method="POST" action="{% url 'retrigger_evaluation' submission.id %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-arrow-clockwise me-1"></i> Re-run AI Evaluation
+                </button>
+            </form>
         </div>
 
         <!-- Queue Nav Controls -->
@@ -131,13 +137,13 @@
                                         <div class="mb-3">
                                             <label class="form-label-panel d-block mb-1">Plagiarism Info:</label>
                                             <div class="d-flex gap-3 status-label">
-                                                <span>Textbook Plagiarism: <strong>{{ item.plagiarism_score|default:"N/A" }}</strong></span>
+                                                <span>Textbook Plagiarism: <strong>{{ item.textbook_plagiarism_score|default:"N/A" }}</strong></span>
                                             </div>
                                             <div class="d-flex gap-3 status-label">
-                                                <span>Peer-to-Peer Plagiarism: <strong>{{ item.plagiarism_score|default:"N/A" }}</strong></span>
+                                                <span>Peer-to-Peer Plagiarism: <strong>{{ item.textbook_plagiarism_score|default:"N/A" }}</strong></span>
                                             </div>
                                             <div class="d-flex gap-3 status-label">
-                                                <span>AI Plagiarism: <strong>{{ item.plagiarism_score|default:"N/A" }}</strong></span>
+                                                <span>AI Plagiarism: <strong>{{ item.ai_plagiarism_score|default:"N/A" }}</strong></span>
                                             </div>
                                             <div class="d-flex gap-3 status-label">
                                                 <span>Deduction: <strong>{{ item.penalty_deducted|default:"N/A" }}</strong></span>

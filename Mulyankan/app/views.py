@@ -9,10 +9,12 @@ from django.contrib import messages
 from django.core.management import call_command
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from app.decorators import admin_required, evaluator_required
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from app.models import AssignmentSubmission, EvaluationResult, EvaluationBatch, EvaluatorExpertise, Course
+from app.services.pipeline import evaluate_submission_pipeline
 from pathlib import Path
 from django.utils import timezone
+import threading
 import json
 import zipfile
 
@@ -336,6 +338,42 @@ def run_ingest_textbooks(request):
     return redirect('admin_dashboard')
 
 @admin_required
+def run_batch_evaluation(request):
+    if request.method == 'POST':
+        batch_id = request.POST.get('batch_id')
+        
+        if not batch_id:
+            messages.error(request, "Please select a valid batch to evaluate.")
+            return redirect('admin_dashboard')
+
+        batch = get_object_or_404(EvaluationBatch, id=batch_id)
+        pending_submissions = AssignmentSubmission.objects.filter(
+            batch=batch, 
+            status='Pending Review'
+        )
+
+        if not pending_submissions.exists():
+            messages.warning(request, f"No pending submissions found in batch '{batch.batch_name}'.")
+            return redirect('admin_dashboard')
+
+        submission_ids = list(pending_submissions.values_list('id', flat=True))
+
+        # Background Execution Thread
+        def process_batch_pipeline(sub_ids):
+            for sub_id in sub_ids:
+                try:
+                    evaluate_submission_pipeline(sub_id)
+                except Exception as e:
+                    print(f"[PIPELINE BATCH ERROR] Failed evaluating submission ID {sub_id}: {e}")
+
+        thread = threading.Thread(target=process_batch_pipeline, args=(submission_ids,))
+        thread.start()
+
+        messages.success(request, f"Started background AI evaluation for {len(submission_ids)} pending submission(s) in batch '{batch.batch_name}'.")
+
+    return redirect('admin_dashboard')
+
+@admin_required
 def update_courses_json(request):
     if request.method == 'POST':
         code = request.POST.get('course_code', '').strip().upper()
@@ -500,6 +538,21 @@ def evaluate_submission(request, submission_id):
         'total_max_marks': total_max_marks,
     }
     return render(request, 'dashboard/evaluation_splitview.html', context)
+
+@evaluator_required
+def retrigger_evaluation(request, submission_id):
+    submission = get_object_or_404(AssignmentSubmission, id=submission_id, evaluator=request.user)
+    
+    try:
+        with transaction.atomic():
+            evaluate_submission_pipeline(submission.id)
+            
+        messages.success(request, f"AI Evaluation successfully generated for #{submission.enrollment_number}.")
+    except Exception as e:
+        messages.error(request, f"Evaluation execution failed: {str(e)}. Previous evaluation preserved.")
+        print(f"[PIPELINE ERROR] {e}")
+
+    return redirect('evaluate_submission', submission_id=submission.id)
 
 @login_required
 def registration_waiting(request):

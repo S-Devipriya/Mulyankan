@@ -464,6 +464,13 @@ code {
     font-weight: 600;
 }
 
+.badge-queue {
+    background-color: rgba(68, 79, 82, 0.65);
+    color: #141414;
+    border: 1px solid rgba(68, 79, 82, 0.65);
+    font-weight: 600;
+}
+
 .badge-detail {
     background-color: rgba(0, 180, 216, 0.75);
     color: #0c2242;

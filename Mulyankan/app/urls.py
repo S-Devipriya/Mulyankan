@@ -8,6 +8,7 @@ urlpatterns = [
     path('login', views.login_user, name='login'),
     path('evaluator-dashboard/', views.evaluator_dashboard, name='evaluator_dashboard'),
     path('evaluator-dashboard/evaluate/<int:submission_id>/', views.evaluate_submission, name='evaluate_submission'),
+    path('evaluator-dashboard/evaluating/<int:submission_id>/', views.retrigger_evaluation, name="retrigger_evaluation"),
     path('logout', views.logout_user, name='logout'),
     path('result', views.result_page, name='result'),
     path('assignment/<int:pk>/pdf/', views.view_assignment, name='view_assignment'),
@@ -20,6 +21,7 @@ urlpatterns = [
     path('admin-dashboard/upload-textbooks/', views.upload_textbooks, name="upload_textbooks"),
     path('admin-dashboard/extract-submissions/', views.run_extract_submissions, name='run_extract_submissions'),
     path('admin-dashboard/ingest-textbooks/', views.run_ingest_textbooks, name='run_ingest_textbooks'),
+    path('admin-dashboard/run-batch-evaluation/', views.run_batch_evaluation, name='run_batch_evaluation'),
     path('admin-dashboard/update-courses-json/', views.update_courses_json, name='update_courses_json'),
     path('admin-dashboard/update-assignment-schemes-json/', views.update_assignment_schemes_json, name='update_assignment_schemes_json'),
 ]

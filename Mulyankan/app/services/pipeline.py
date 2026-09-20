@@ -16,7 +16,8 @@ def evaluate_submission_pipeline(submission_id: int) -> EvaluationResult:
     weighted_content_sum = 0.0
     weighted_presentation_sum = 0.0
     weighted_linguistic_sum = 0.0
-    max_observed_plagiarism = 0.0
+    max_observed_textbook_plagiarism = 0.0
+    max_observed_ai_plagiarism = 0.0
     question_audits = []
     feedback_segments = []
 
@@ -42,14 +43,18 @@ def evaluate_submission_pipeline(submission_id: int) -> EvaluationResult:
         weighted_linguistic_sum += (l_pct / 100.0) * (max_marks * 0.15)
 
         score_awarded = evaluation.get("score_awarded", 0.0)
-        plagiarism_score = evaluation.get("plagiarism_score", 0.0)
+        textbook_plagiarism_score = evaluation.get("textbook_plagiarism_score", 0.0)
+        ai_plagiarism_score = evaluation.get("ai_plagiarism_score", 0.0)
         penalty_deducted = evaluation.get("penalty_deducted", 0.0)
         q_feedback = evaluation.get("feedback", "")
 
         total_score_awarded += score_awarded
         total_max_marks += max_marks
-        if plagiarism_score > max_observed_plagiarism:
-            max_observed_plagiarism = plagiarism_score
+        if textbook_plagiarism_score > max_observed_textbook_plagiarism:
+            max_observed_textbook_plagiarism = textbook_plagiarism_score
+
+        if ai_plagiarism_score > max_observed_ai_plagiarism:
+            max_observed_ai_plagiarism = ai_plagiarism_score
 
         feedback_segments.append(f"Q{q_num}: {q_feedback}")
 
@@ -59,7 +64,8 @@ def evaluate_submission_pipeline(submission_id: int) -> EvaluationResult:
             "max_marks": max_marks,
             "score_awarded": score_awarded,
             "scores_normalized": scores_norm,
-            "plagiarism_score": plagiarism_score,
+            "textbook_plagiarism_score": textbook_plagiarism_score,
+            "ai_plagiarism_score": ai_plagiarism_score,
             "penalty_deducted": penalty_deducted,
             "feedback": q_feedback,
             "citations": evaluation.get("citations", []),
@@ -88,7 +94,8 @@ def evaluate_submission_pipeline(submission_id: int) -> EvaluationResult:
                 "score_presentation": round(weighted_presentation_sum, 2),
                 "score_linguistic": round(weighted_linguistic_sum, 2),
                 "suggested_final_score": round(total_score_awarded, 2),
-                "plagiarism_percentage": int(round(max_observed_plagiarism, 2)),
+                "plagiarism_percentage": int(round(max_observed_textbook_plagiarism, 2)),
+                "ai_percentage": int(round(max_observed_ai_plagiarism, 2)),
                 "evaluator_remarks": overall_feedback,
                 "audit_logic": question_audits,
             }

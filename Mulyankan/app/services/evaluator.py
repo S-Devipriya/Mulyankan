@@ -5,7 +5,7 @@ from google import genai
 from google.genai import types
 from typing import List, Dict, Any
 import app.services.scheme_manager
-from app.services.plagiarism_checker import compute_textbook_overlap
+from app.services.plagiarism_checker import compute_textbook_overlap, detect_ai_content
 
 client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
@@ -89,7 +89,7 @@ def evaluate_qa_unit(question_text: str, student_answer: str, max_marks: float, 
         Provide an objective assessment of the student answer in the requested JSON format following the 0-100 rubric criteria and referencing citations."""
 
     response = client.models.generate_content(
-        model='gemini-3.6-flash',
+        model='gemini-3.5-flash-lite',
         contents=prompt,
         config=types.GenerateContentConfig(
             system_instruction=system_instruction,
@@ -132,12 +132,9 @@ def evaluate_qa_unit(question_text: str, student_answer: str, max_marks: float, 
 
     try:
         data = json.loads(response.text)
-    except (json.JSONDecodeError, TypeError):
-        data = {
-            "scores_normalized": {"content": 0.0, "presentation": 0.0, "linguistic": 0.0},
-            "feedback": "Failed to parse evaluation response from model.",
-            "citations": []
-        }
+    except Exception as e:
+        print(f"[EVALUATOR ERROR] Gemini API generation failed: {e}")
+        raise e
 
     #Calculating actual scores as per rubric: content (70%), presentaion and linguistic accuracy (15%) each
     scores = data.get("scores_normalized", {})
@@ -149,10 +146,12 @@ def evaluate_qa_unit(question_text: str, student_answer: str, max_marks: float, 
     base_score = (weighted_pct / 100.0) * max_marks
 
     #Computing linear proportional text-book plagiarism penalty for lexical similarity > 80%
-    plagiarism_score = compute_textbook_overlap(student_answer, context_chunks)
+    textbook_plagiarism_score = compute_textbook_overlap(student_answer, context_chunks)
     penalty_factor = 0.0
-    if plagiarism_score > 70.0:
-        penalty_factor = min(1.0, (plagiarism_score - 70.0) / (100.0 - 70.0))
+    if textbook_plagiarism_score > 70.0:
+        penalty_factor = min(1.0, (textbook_plagiarism_score - 70.0) / (100.0 - 70.0))
+
+    ai_plagiarism_score = detect_ai_content(student_answer)
 
     final_score = base_score * (1.0 - penalty_factor)
     final_score = round(max(0.0, min(max_marks, final_score)), 2)
@@ -164,7 +163,8 @@ def evaluate_qa_unit(question_text: str, student_answer: str, max_marks: float, 
             "linguistic": l_score
         },
         "score_awarded": final_score,
-        "plagiarism_score": plagiarism_score,
+        "textbook_plagiarism_score": textbook_plagiarism_score,
+        "ai_plagiarism_score": ai_plagiarism_score,
         "penalty_deducted": round(base_score * penalty_factor, 2),
         "feedback": data.get("feedback", ""),
         "citations": data.get("citations", [])

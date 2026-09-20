@@ -10,34 +10,34 @@
                 <div class="list-group list-group-flush">
                     <div class="status-item">
                         <div class="d-flex align-items-center">
-                            <span class="status-indicator bg-secondary me-2"></span>
+                            <span class="status-indicator badge-queue me-2"></span>
                             <span class="status-label">Pending Extraction</span>
                         </div>
-                        <span class="badge rounded-pill bg-secondary px-3">{{ assignment_stats.pending_extraction|default:0 }}</span>
+                        <span class="badge rounded-pill badge-queue px-3">{{ assignment_stats.pending_extraction|default:0 }}</span>
                     </div>
 
                     <div class="status-item">
                         <div class="d-flex align-items-center">
-                            <span class="status-indicator bg-warning me-2"></span>
+                            <span class="status-indicator badge-pending me-2"></span>
                             <span class="status-label">Pending Allocation</span>
                         </div>
-                        <span class="badge rounded-pill bg-warning text-dark px-3">{{ assignment_stats.pending_allocation|default:0 }}</span>
+                        <span class="badge rounded-pill badge-pending px-3">{{ assignment_stats.pending_allocation|default:0 }}</span>
                     </div>
 
                     <div class="status-item">
                         <div class="d-flex align-items-center">
-                            <span class="status-indicator bg-info me-2"></span>
+                            <span class="status-indicator badge-detail me-2"></span>
                             <span class="status-label">Under Review</span>
                         </div>
-                        <span class="badge rounded-pill bg-info text-dark px-3">{{ assignment_stats.under_review|default:0 }}</span>
+                        <span class="badge rounded-pill badge-detail px-3">{{ assignment_stats.under_review|default:0 }}</span>
                     </div>
 
                     <div class="status-item">
                         <div class="d-flex align-items-center">
-                            <span class="status-indicator bg-success me-2"></span>
+                            <span class="status-indicator badge-completed me-2"></span>
                             <span class="status-label">Evaluated</span>
                         </div>
-                        <span class="badge rounded-pill bg-success px-3">{{ assignment_stats.evaluated|default:0 }}</span>
+                        <span class="badge rounded-pill badge-completed px-3">{{ assignment_stats.evaluated|default:0 }}</span>
                     </div>
                 </div>
             </div>
@@ -55,34 +55,34 @@
                 <div class="list-group list-group-flush">
                     <div class="status-item">
                         <div class="d-flex align-items-center">
-                            <span class="status-indicator bg-secondary me-2"></span>
+                            <span class="status-indicator badge-queue me-2"></span>
                             <span class="status-label">Total</span>
                         </div>
-                        <span class="badge rounded-pill bg-secondary px-3">{{ batch_stats.total|default:0 }}</span>
+                        <span class="badge rounded-pill badge-queue px-3">{{ batch_stats.total|default:0 }}</span>
                     </div>
 
                     <div class="status-item">
                         <div class="d-flex align-items-center">
-                            <span class="status-indicator bg-warning me-2"></span>
+                            <span class="status-indicator badge-pending me-2"></span>
                             <span class="status-label">Pending Extraction</span>
                         </div>
-                        <span class="badge rounded-pill bg-warning text-dark px-3">{{ batch_stats.pending_extraction|default:0 }}</span>
+                        <span class="badge rounded-pill badge-pending px-3">{{ batch_stats.pending_extraction|default:0 }}</span>
                     </div>
 
                     <div class="status-item">
                         <div class="d-flex align-items-center">
-                            <span class="status-indicator bg-info me-2"></span>
+                            <span class="status-indicator badge-detail me-2"></span>
                             <span class="status-label">Active</span>
                         </div>
-                        <span class="badge rounded-pill bg-info text-dark px-3">{{ batch_stats.active|default:0 }}</span>
+                        <span class="badge rounded-pill badge-detail px-3">{{ batch_stats.active|default:0 }}</span>
                     </div>
 
                     <div class="status-item">
                         <div class="d-flex align-items-center">
-                            <span class="status-indicator bg-success me-2"></span>
+                            <span class="status-indicator badge-completed me-2"></span>
                             <span class="status-label">Ready to Export</span>
                         </div>
-                        <span class="badge rounded-pill bg-success px-3">{{ batch_stats.ready_to_export|default:0 }}</span>
+                        <span class="badge rounded-pill badge-completed px-3">{{ batch_stats.ready_to_export|default:0 }}</span>
                     </div>
                 </div>
             </div>

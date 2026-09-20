@@ -125,5 +125,35 @@
                 </div>
             </div>
         </div>
+
+        <!-- Script 3: AI Pipeline Batch Evaluator -->
+        <div class="col-12 col-lg-6">
+            <div class="card tab-card h-100">
+                <div class="card-body">
+                    <h6 class="section-title mb-2">
+                        <i class="bi bi-cpu me-1"></i> AI Batch Evaluator
+                    </h6>
+                    <p class="section-subtitle">Execute <code>pipeline.py</code> grading on all pending submissions in a batch.</p>
+                    <form method="POST" action="{% url 'run_batch_evaluation' %}">
+                        {% csrf_token %}
+                        <div class="mb-2">
+                            <label class="form-label-panel mb-1">Select Target Batch</label>
+                            <select name="batch_id" class="form-select form-select-sm" required>
+                                <option value="" selected disabled>Choose batch...</option>
+                                {% for batch in all_batches %}
+                                    <option value="{{ batch.id }}">
+                                        {{ batch.batch_name }} ({{ batch.status }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-signin w-100 mt-2">
+                            <i class="bi bi-rocket-takeoff me-1"></i> Run Batch Evaluation
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
