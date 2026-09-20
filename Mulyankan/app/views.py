@@ -462,9 +462,18 @@ def evaluate_submission(request, submission_id):
     prev_id = batch_submissions[current_idx - 1] if current_idx > 0 else None
     next_id = batch_submissions[current_idx + 1] if current_idx < len(batch_submissions) - 1 else None
 
-    if request.method == 'POST':
-        human_score = request.POST.get('human_final_score')
+    total_max_marks = sum(item.get('max_marks', 0) for item in result.audit_logic)
+
+    if request.method == "POST":
+        try:
+            human_score = float(request.POST.get('human_final_score', 0))
+        except ValueError:
+            human_score = -1
         remarks = request.POST.get('evaluator_remarks', '').strip()
+
+        if human_score < 0 or human_score > total_max_marks:
+            messages.error(request, f"Score must be between 0 and {total_max_marks}.")
+            return redirect('evaluate_submission', submission_id=submission.id)
 
         if result and human_score:
             result.human_final_score = float(human_score)
@@ -488,6 +497,7 @@ def evaluate_submission(request, submission_id):
         'prev_id': prev_id,
         'next_id': next_id,
         'audit_logic': result.audit_logic if result else [],
+        'total_max_marks': total_max_marks,
     }
     return render(request, 'dashboard/evaluation_splitview.html', context)
 

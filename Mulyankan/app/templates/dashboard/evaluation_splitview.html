@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid d-flex flex-column vh-100 py-2 overflow-hidden">
+    
+    <!-- Top Action Bar -->
+    <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom">
+        <div class="d-flex align-items-center gap-3">
+            <a href="{% url 'evaluator_dashboard' %}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Queue
+            </a>
+            <span class="brand-title mb-0">
+                Enrollment: <strong>{{ submission.enrollment_number }}</strong> 
+                <span class="status-label">({{ submission.course.course_code }})</span>
+            </span>
+        </div>
+
+        <!-- Queue Nav Controls -->
+        <div class="d-flex gap-2">
+            {% if prev_id %}
+                <a href="{% url 'evaluate_submission' prev_id %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-chevron-left me-1"></i> Previous</a>
+            {% else %}
+                <button class="btn btn-sm btn-outline-secondary" disabled><i class="bi bi-chevron-left me-1"></i> Previous</button>
+            {% endif %}
+
+            {% if next_id %}
+                <a href="{% url 'evaluate_submission' next_id %}" class="btn btn-sm btn-outline-primary">Next <i class="bi bi-chevron-right ms-1"></i></a>
+            {% else %}
+                <button class="btn btn-sm btn-outline-secondary" disabled>Next <i class="bi bi-chevron-right ms-1"></i></button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Main Split Area -->
+    <div class="row g-3 flex-grow-1 overflow-hidden pb-2">
+        
+        <!-- Left Pane: PDF View -->
+        <div class="col-12 col-lg-6 h-100">
+            <div class="card tab-card h-100 p-2">
+                <iframe src="{% url 'stream_assignment_pdf' submission.id %}" class="w-100 h-100 rounded border-0"></iframe>
+            </div>
+        </div>
+
+        <!-- Right Pane: AI Metrics & Human Review Form -->
+        <div class="col-12 col-lg-6 h-100">
+            <div class="card tab-card mb-3 overflow-auto">
+                <div class="card-body">
+                    
+                    <!-- Overall AI Summary Header -->
+                    <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                        <h6 class="section-title mb-0">
+                            <i class="bi bi-robot me-1"></i> AI Evaluation Rationale
+                        </h6>
+                        {% if result %}
+                        <div class="d-flex gap-2">
+                            <span class="badge badge-alert">Plagiarism: {{ result.plagiarism_percentage }}%</span>
+                            <span class="badge badge-pending">AI Detection: {{ result.ai_percentage }}%</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if result %}
+                        <!-- Top-Level Score Cards -->
+                        <div class="d-flex justify-content-between align-items-center bg-white p-2 rounded mb-3 text-center">
+                            <div class="flex-fill border-end px-2">
+                                <span class="metric-label d-block">Content</span>
+                                <strong class="metric-value">{{ result.score_content }}</strong>
+                            </div>
+                            <div class="flex-fill border-end px-2">
+                                <span class="metric-label d-block">Linguistic</span>
+                                <strong class="metric-value">{{ result.score_linguistic }}</strong>
+                            </div>
+                            <div class="flex-fill border-end px-2">
+                                <span class="metric-label d-block">Presentation</span>
+                                <strong class="metric-value">{{ result.score_presentation }}</strong>
+                            </div>
+                            <div class="flex-fill border-end px-2">
+                                <span class="metric-label d-block">Total</span>
+                                <strong class="metric-value">{{ result.suggested_final_score }}</strong>
+                            </div>
+                            <div class="flex-fill px-2">
+                                <span class="metric-label d-block">Max Marks</span>
+                                <strong class="metric-value">{{ total_max_marks }}</strong>
+                            </div>
+                        </div>
+
+                        <!-- Per-Question Rationale Accordion -->
+                        <h6 class="form-label-panel mb-2">Question Breakdown</h6>
+                        <div class="accordion mb-4" id="questionAuditAccordion">
+                            {% for item in audit_logic %}
+                            <div class="accordion-item border-0 mb-2 shadow-sm rounded overflow-hidden">
+                                <h2 class="accordion-header" id="headingQ{{ forloop.counter }}">
+                                    <button class="accordion-button collapsed py-2 bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapseQ{{ forloop.counter }}">
+                                        <div class="d-flex align-items-center justify-content-between w-100 me-2">
+                                            <span class="tab-pane-title mb-0 fs-6">Question {{ item.question_number }}</span>
+                                            <div class="d-flex align-items-center gap-2">
+                                                {% if item.penalty_deducted > 0 %}
+                                                    <span class="badge badge-alert">
+                                                        -{{ item.penalty_deducted }} Penalty
+                                                    </span>
+                                                {% endif %}
+                                                <span class="badge badge-teal">
+                                                    Score: {{ item.score_awarded }} / {{ item.max_marks }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </button>
+                                </h2>
+                                <div id="collapseQ{{ forloop.counter }}" class="accordion-collapse collapse" data-bs-parent="#questionAuditAccordion">
+                                    <div class="accordion-body bg-white fs-7">
+                                        
+                                        <!-- Feedback Prompt -->
+                                        <div class="mb-3">
+                                            <label class="form-label-panel d-block mb-1">AI Rationale & Feedback:</label>
+                                            <p class="checklist-box h-auto max-h-none mb-0">{{ item.feedback }}</p>
+                                        </div>
+
+                                        <!-- Sub-scores Normalized -->
+                                        {% if item.scores_normalized %}
+                                        <div class="mb-3">
+                                            <label class="form-label-panel d-block mb-1">Normalized Scores:</label>
+                                            <div class="d-flex gap-3 status-label">
+                                                <span>Content: <strong>{{ item.scores_normalized.content|default:"N/A" }}</strong></span>
+                                                <span>Linguistic: <strong>{{ item.scores_normalized.linguistic|default:"N/A" }}</strong></span>
+                                                <span>Presentation: <strong>{{ item.scores_normalized.presentation|default:"N/A" }}</strong></span>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+
+                                        <div class="mb-3">
+                                            <label class="form-label-panel d-block mb-1">Plagiarism Info:</label>
+                                            <div class="d-flex gap-3 status-label">
+                                                <span>Textbook Plagiarism: <strong>{{ item.plagiarism_score|default:"N/A" }}</strong></span>
+                                            </div>
+                                            <div class="d-flex gap-3 status-label">
+                                                <span>Peer-to-Peer Plagiarism: <strong>{{ item.plagiarism_score|default:"N/A" }}</strong></span>
+                                            </div>
+                                            <div class="d-flex gap-3 status-label">
+                                                <span>AI Plagiarism: <strong>{{ item.plagiarism_score|default:"N/A" }}</strong></span>
+                                            </div>
+                                            <div class="d-flex gap-3 status-label">
+                                                <span>Deduction: <strong>{{ item.penalty_deducted|default:"N/A" }}</strong></span>
+                                            </div>
+                                        </div>
+
+                                        {% if item.citations %}
+                                        <div class="mb-3">
+                                            <label class="form-label-panel d-block mb-1">Textbook Citation Rationale:</label>
+                                            <div class="d-flex flex-column gap-2">
+                                                {% for cite in item.citations %}
+                                                <div class="bg-light p-2 rounded border status-label">
+                                                    <span class="tab-pane-title d-block mb-1">
+                                                        <i class="bi bi-journal-text me-1"></i>
+                                                        Block {{ cite.block_number }}, Unit {{ cite.unit_number }} (Page {{ cite.page_number }})
+                                                    </span>
+                                                    <p class="status-label">{{ cite.relevance_rationale }}</p>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        {% endif %}
+
+                                    </div>
+                                </div>
+                            </div>
+                            {% empty %}
+                                <div class="empty-state-box">
+                                    <span class="empty-text">No question breakdown available in audit logic.</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">AI Evaluation results have not been generated for this submission yet.</div>
+                    {% endif %}
+
+                    <!--Human Review Area-->
+                    <form method="POST" class="border-top pt-3">
+                        {% csrf_token %}
+                        <h6 class="section-title mb-2">
+                            <i class="bi bi-person-check me-1"></i> Evaluator Final Decision
+                        </h6>
+                        
+                        <!-- Human Score Input -->
+                        <div class="mb-3">
+                            <label class="form-label-panel">Human Final Score (Out of {{ total_max_marks }})</label>
+                            <input type="number" name="human_final_score" class="form-control form-control-sm" value="{{ result.human_final_score|default:result.suggested_final_score }}" min="0" max="{{ total_max_marks }}" required>
+                            <div class="form-text">AI plagiarism deduction is not applied. Review the percentage and student's answer and apply appropriate deduction as per your judgement.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label-panel">AI Generated Feedback</label>
+                            <textarea class="form-control form-control-sm bg-light" rows="4" readonly>{{ result.feedback_summary|default:result.evaluator_remarks }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label-panel">Evaluator Remarks</label>
+                            <textarea name="evaluator_remarks" class="form-control form-control-sm" rows="4" placeholder="Copy paste the AI evaluation feedback after making edits or write your own feedback for the student"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-sm btn-signin w-100">
+                            <i class="bi bi-check2-square me-1"></i> Submit & Finalize Review
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

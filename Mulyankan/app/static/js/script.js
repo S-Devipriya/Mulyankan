@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function() {
             schemeContainer.innerHTML = `
                 <div class="d-flex align-items-center justify-content-between mb-2">
                     <span class="user-msg">Total Marks: <strong>${schemeData.total_marks}</strong></span>
-                    <span class="badge-warning px-2 py-1 rounded">${Object.keys(schemeData.questions || {}).length} Questions</span>
+                    <span class="badge-pending px-2 py-1 rounded">${Object.keys(schemeData.questions || {}).length} Questions</span>
                 </div>
                 <div class="table-responsive">
                     <table class="table dashboard-table align-middle">
