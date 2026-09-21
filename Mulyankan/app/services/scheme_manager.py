@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 from django.conf import settings
+from typing import List, Dict, Any
 import re
 
 SCHEMES_FILE = settings.BASE_DIR / 'data' / 'assignment_schemes.json'
@@ -56,3 +57,48 @@ def get_question_text(course_data: dict, q_num: str, default: str = ""):
 def normalize_q_num(q_str: str):
     cleaned = re.sub(r'[\(\)\.\:\-\s]+', '', str(q_str)).lower()
     return cleaned
+
+def decompose_submission_qa(markdown_text: str, course_code: str = "") -> List[Dict[str, Any]]:
+    #Captures question number and student answer body
+    q_header_pattern = re.compile(
+        r'^\s*(?:#+\s*)?[\*\_]*(?:Q|Question)\s*\.?\s*'
+        r'(\d+(?:\s*\.?\s*\(?[a-zA-Z0-9]+\)?)?)'
+        r'[\)\.\:\-\s\*\_]*',
+        re.IGNORECASE | re.MULTILINE
+    )
+
+    answer_block_pattern = re.compile(
+        r'Ans(?:wer)?(?:\s*\(do\s+not\s+edit\s+this\s+cell\))?',
+        re.IGNORECASE
+    )
+
+    matches = list(q_header_pattern.finditer(markdown_text))
+    qa_units = []
+
+    schemes = load_schemes()
+    course_data = schemes.get(course_code.upper(), {})
+
+    for i, match in enumerate(matches):
+        raw_q_num = match.group(1).strip()
+        start_pos = match.end()
+        end_pos = matches[i + 1].start() if i + 1 < len(matches) else len(markdown_text)
+
+        block_text = markdown_text[start_pos:end_pos]
+
+        ans_marker = answer_block_pattern.search(block_text)
+        if ans_marker:
+            ans_body = block_text[ans_marker.end():].strip()
+
+        canonical_q_num = normalize_q_num(raw_q_num)
+        max_marks = get_question_max_marks(course_data, canonical_q_num, default=0.0)
+        q_text = get_question_text(course_data, canonical_q_num, default="")
+
+        qa_units.append({
+                    "question_number": raw_q_num,
+                    "canonical_number": canonical_q_num, 
+                    "max_marks": max_marks,
+                    "question_text": q_text,
+                    "student_answer": ans_body,
+                })
+
+    return qa_units

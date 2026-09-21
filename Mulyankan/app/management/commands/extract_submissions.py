@@ -117,10 +117,7 @@ class Command(BaseCommand):
         for pdf_path in pdf_files:
             self._process_single_pdf(pdf_path, batch)
 
-        #Update batch status to 'Ready' once extraction is complete
-        batch.status = 'Ready'
-        batch.save()
-        self.stdout.write(self.style.SUCCESS(f"Batch '{batch.batch_name}' status updated to 'Ready'.\n"))
+        self.stdout.write(self.style.SUCCESS(f"Batch '{batch.batch_name}' status updated to 'Processing'.\n"))
 
     def _process_single_pdf(self, pdf_path: Path, batch: EvaluationBatch):
         #Parsing filename: <enrolmentno>-<coursecode>-<year>.pdf

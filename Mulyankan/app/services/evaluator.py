@@ -8,55 +8,8 @@ import app.services.scheme_manager
 from app.services.plagiarism_checker import compute_textbook_overlap, detect_ai_content
 
 client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
-
-def decompose_submission_qa(markdown_text: str, course_code: str = "") -> List[Dict[str, Any]]:
-    #Captures question number and student answer body
-    q_header_pattern = re.compile(
-        r'^\s*(?:#+\s*)?[\*\_]*(?:Q|Question)\s*\.?\s*'
-        r'(\d+(?:\s*\.?\s*\(?[a-zA-Z0-9]+\)?)?)'
-        r'[\)\.\:\-\s\*\_]*',
-        re.IGNORECASE | re.MULTILINE
-    )
-
-    answer_block_pattern = re.compile(
-        r'Ans(?:wer)?(?:\s*\(do\s+not\s+edit\s+this\s+cell\))?',
-        re.IGNORECASE
-    )
-
-    matches = list(q_header_pattern.finditer(markdown_text))
-    qa_units = []
-
-    schemes = app.services.scheme_manager.load_schemes()
-    course_data = schemes.get(course_code.upper(), {})
-
-    for i, match in enumerate(matches):
-        raw_q_num = match.group(1).strip()
-        start_pos = match.end()
-        end_pos = matches[i + 1].start() if i + 1 < len(matches) else len(markdown_text)
-
-        block_text = markdown_text[start_pos:end_pos]
-
-        ans_marker = answer_block_pattern.search(block_text)
-        if ans_marker:
-            ans_body = block_text[ans_marker.end():].strip()
-
-        canonical_q_num = app.services.scheme_manager.normalize_q_num(raw_q_num)
-        max_marks = app.services.scheme_manager.get_question_max_marks(course_data, canonical_q_num, default=0.0)
-        q_text = app.services.scheme_manager.get_question_text(course_data, canonical_q_num, default="")
-
-        qa_units.append({
-                    "question_number": raw_q_num,
-                    "canonical_number": canonical_q_num, 
-                    "max_marks": max_marks,
-                    "question_text": q_text,
-                    "student_answer": ans_body,
-                })
-
-    return qa_units
-
         
-
-def evaluate_qa_unit(question_text: str, student_answer: str, max_marks: float, context_chunks: List[Dict[str, Any]]) -> Dict[str, Any]:
+def evaluate_qa_unit(question_text: str, student_answer: str, max_marks: float, context_chunks: List[Dict[str, Any]], peer_plagiarism_score: float = 0.0, peer_matches: List[Dict[str, Any]] = None) -> Dict[str, Any]:
     #Evaluates a student's question-answer pair and returns scoring and audit_trail
 
     formatted_context = ""
@@ -145,11 +98,13 @@ def evaluate_qa_unit(question_text: str, student_answer: str, max_marks: float, 
     weighted_pct = (0.70 * c_score) + (0.15 * p_score) + (0.15 * l_score)
     base_score = (weighted_pct / 100.0) * max_marks
 
-    #Computing linear proportional text-book plagiarism penalty for lexical similarity > 80%
+    #Computing linear proportional text-book/peer plagiarism penalty for lexical similarity > 70%
     textbook_plagiarism_score = compute_textbook_overlap(student_answer, context_chunks)
+    effective_plagiarism_score = max(textbook_plagiarism_score, peer_plagiarism_score)
+
     penalty_factor = 0.0
-    if textbook_plagiarism_score > 70.0:
-        penalty_factor = min(1.0, (textbook_plagiarism_score - 70.0) / (100.0 - 70.0))
+    if effective_plagiarism_score > 70.0:
+        penalty_factor = min(1.0, (effective_plagiarism_score - 70.0) / (100.0 - 70.0))
 
     ai_plagiarism_score = detect_ai_content(student_answer)
 
@@ -165,6 +120,8 @@ def evaluate_qa_unit(question_text: str, student_answer: str, max_marks: float, 
         "score_awarded": final_score,
         "textbook_plagiarism_score": textbook_plagiarism_score,
         "ai_plagiarism_score": ai_plagiarism_score,
+        "peer_plagiarism_score": peer_plagiarism_score,
+        "peer_matches": peer_matches,
         "penalty_deducted": round(base_score * penalty_factor, 2),
         "feedback": data.get("feedback", ""),
         "citations": data.get("citations", [])

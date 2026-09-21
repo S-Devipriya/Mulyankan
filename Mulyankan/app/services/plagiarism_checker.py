@@ -1,6 +1,8 @@
 import re
 from typing import List, Dict, Any, Set
 from transformers import pipeline
+from app.models import AssignmentSubmission, EvaluationResult
+from app.services.scheme_manager import decompose_submission_qa
 import os
 
 _AI_DETECTOR = None
@@ -96,3 +98,84 @@ def detect_ai_content(student_answer: str):
     except Exception as e:
         print(f"AI Detection Error: {e}")
         return 0.0
+
+def compute_peer_similarity(text_a: str, text_b: str, n: int = 4):
+    clean_a = _clean_text_for_ai_detection(text_a)
+    clean_b = _clean_text_for_ai_detection(text_b)
+
+    ngrams_a = get_word_ngrams(clean_a, n=n)
+    ngrams_b = get_word_ngrams(clean_b, n=n)
+
+    if not ngrams_a or not ngrams_b:
+        return 0.0
+
+    intersection = ngrams_a.intersection(ngrams_b)
+    overlap_pct = (len(intersection) / len(ngrams_a)) * 100.0
+    return round(overlap_pct, 2)
+
+
+def generate_course_peer_map(course_code: str, batch_id: int, n_gram_size: int = 4, min_threshold: float = 50.0) -> Dict[str, Dict[str, Any]]:
+    submissions = list(
+        AssignmentSubmission.objects.filter(
+            course__course_code=course_code,
+            batch_id=batch_id
+        ).select_related('course')
+    )
+
+    if len(submissions) < 2:
+        return {}
+
+    # Decompose text for all submissions in advance
+    parsed_submissions = {}
+    for sub in submissions:
+        qa_units = decompose_submission_qa(sub.extracted_text, course_code=course_code)
+        parsed_submissions[sub.id] = {
+            "submission_id": sub.id,
+            "enrollment_number": sub.enrollment_number,
+            "qa_map": {
+                str(u.get("canonical_number")).strip(): u.get("student_answer", "")
+                for u in qa_units
+            }
+        }
+
+    peer_map = {}
+
+    # Cross-compare questions across all submissions
+    for target_id, target_data in parsed_submissions.items():
+        peer_map[target_id] = {}
+
+        for q_num, text_a in target_data["qa_map"].items():
+            if not text_a or len(text_a.strip()) < 20:
+                peer_map[target_id][q_num] = {
+                    "peer_plagiarism_score": 0.0,
+                    "peer_matches": []
+                }
+                continue
+
+            matches = []
+
+            for other_id, other_data in parsed_submissions.items():
+                if target_id == other_id:
+                    continue
+
+                text_b = other_data["qa_map"].get(q_num, "")
+                if not text_b or len(text_b.strip()) < 20:
+                    continue
+
+                sim = compute_peer_similarity(text_a, text_b, n=n_gram_size)
+                if sim >= min_threshold:
+                    matches.append({
+                        "matched_submission_id": other_data["submission_id"],
+                        "enrollment_number": other_data["enrollment_number"],
+                        "similarity_score": sim
+                    })
+
+            matches.sort(key=lambda x: x["similarity_score"], reverse=True)
+            top_score = matches[0]["similarity_score"] if matches else 0.0
+
+            peer_map[target_id][q_num] = {
+                "peer_plagiarism_score": top_score,
+                "peer_matches": matches
+            }
+
+    return peer_map

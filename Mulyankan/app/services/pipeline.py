@@ -1,9 +1,10 @@
 from django.db import transaction
 from app.models import AssignmentSubmission, EvaluationResult
-from app.services.evaluator import decompose_submission_qa, evaluate_qa_unit
+from app.services.evaluator import evaluate_qa_unit
+from app.services.scheme_manager import decompose_submission_qa
 from app.services.retrieval import retrieve_relevant_chunks
 
-def evaluate_submission_pipeline(submission_id: int) -> EvaluationResult:
+def evaluate_submission_pipeline(submission_id: int, peer_map: dict = None) -> EvaluationResult:
 
     submission = AssignmentSubmission.objects.select_related("course").get(id=submission_id)
     course = submission.course
@@ -17,12 +18,16 @@ def evaluate_submission_pipeline(submission_id: int) -> EvaluationResult:
     weighted_presentation_sum = 0.0
     weighted_linguistic_sum = 0.0
     max_observed_textbook_plagiarism = 0.0
+    max_observed_peer_plagiarism = 0.0
     max_observed_ai_plagiarism = 0.0
     question_audits = []
     feedback_segments = []
 
+    student_peer_data = (peer_map or {}).get(submission_id, {})
+
     for unit in qa_units:
         q_num = unit.get("question_number", "Unknown")
+        canonical_num = str(unit.get("canonical_number", "Unknown")).strip()
         q_text = unit.get("question_text", "")
         s_answer = unit.get("student_answer", "")
         max_marks = float(unit.get("max_marks", 0.0))
@@ -30,8 +35,12 @@ def evaluate_submission_pipeline(submission_id: int) -> EvaluationResult:
         #Retrieving textbook reference context
         retrieved_chunks = retrieve_relevant_chunks(course, q_text, top_k=3)
 
+        q_peer_info = student_peer_data.get(canonical_num, {})
+        p2p_plagiarism_score = q_peer_info.get("peer_plagiarism_score", 0.0)
+        peer_matches = q_peer_info.get("peer_matches", [])
+
         #Grading
-        evaluation = evaluate_qa_unit(question_text=q_text, student_answer=s_answer, max_marks=max_marks, context_chunks=retrieved_chunks)
+        evaluation = evaluate_qa_unit(question_text=q_text, student_answer=s_answer, max_marks=max_marks, context_chunks=retrieved_chunks, peer_plagiarism_score=p2p_plagiarism_score, peer_matches=peer_matches)
 
         scores_norm = evaluation.get("scores_normalized", {})
         c_pct = float(scores_norm.get("content", 0.0))
@@ -45,6 +54,7 @@ def evaluate_submission_pipeline(submission_id: int) -> EvaluationResult:
         score_awarded = evaluation.get("score_awarded", 0.0)
         textbook_plagiarism_score = evaluation.get("textbook_plagiarism_score", 0.0)
         ai_plagiarism_score = evaluation.get("ai_plagiarism_score", 0.0)
+        peer_plagiarism_score = evaluation.get("peer_plagiarism_score", 0.0)
         penalty_deducted = evaluation.get("penalty_deducted", 0.0)
         q_feedback = evaluation.get("feedback", "")
 
@@ -56,6 +66,9 @@ def evaluate_submission_pipeline(submission_id: int) -> EvaluationResult:
         if ai_plagiarism_score > max_observed_ai_plagiarism:
             max_observed_ai_plagiarism = ai_plagiarism_score
 
+        if peer_plagiarism_score > max_observed_peer_plagiarism:
+            max_observed_peer_plagiarism = peer_plagiarism_score
+
         feedback_segments.append(f"Q{q_num}: {q_feedback}")
 
         #Assembling audit data
@@ -66,6 +79,8 @@ def evaluate_submission_pipeline(submission_id: int) -> EvaluationResult:
             "scores_normalized": scores_norm,
             "textbook_plagiarism_score": textbook_plagiarism_score,
             "ai_plagiarism_score": ai_plagiarism_score,
+            "peer_plagiarism_score": peer_plagiarism_score,
+            "peer_matches": evaluation.get("peer_matches", []),
             "penalty_deducted": penalty_deducted,
             "feedback": q_feedback,
             "citations": evaluation.get("citations", []),
@@ -86,6 +101,8 @@ def evaluate_submission_pipeline(submission_id: int) -> EvaluationResult:
         + "\n\n".join(feedback_segments)
     )
 
+    max_observed_plagiarism = int(round(max(max_observed_textbook_plagiarism, max_observed_peer_plagiarism)))
+
     with transaction.atomic():
         evaluation_result, _ = EvaluationResult.objects.update_or_create(
             submission=submission,
@@ -94,7 +111,7 @@ def evaluate_submission_pipeline(submission_id: int) -> EvaluationResult:
                 "score_presentation": round(weighted_presentation_sum, 2),
                 "score_linguistic": round(weighted_linguistic_sum, 2),
                 "suggested_final_score": round(total_score_awarded, 2),
-                "plagiarism_percentage": int(round(max_observed_textbook_plagiarism, 2)),
+                "plagiarism_percentage": int(round(max_observed_plagiarism, 2)),
                 "ai_percentage": int(round(max_observed_ai_plagiarism, 2)),
                 "evaluator_remarks": overall_feedback,
                 "audit_logic": question_audits,
