@@ -97,7 +97,7 @@ def evaluate_submission_pipeline(submission_id: int, peer_map: dict = None) -> E
         })
 
     overall_feedback = (
-        f"Evaluation Summary: Scored {round(total_score_awarded, 2)} out of {round(total_max_marks, 2)}.\n\n"
+        f"Evaluation Summary: Scored {int(round(total_score_awarded, 2))} out of {int(round(total_max_marks, 2))}.\n\n"
         + "\n\n".join(feedback_segments)
     )
 
@@ -110,7 +110,7 @@ def evaluate_submission_pipeline(submission_id: int, peer_map: dict = None) -> E
                 "score_content": round(weighted_content_sum, 2),
                 "score_presentation": round(weighted_presentation_sum, 2),
                 "score_linguistic": round(weighted_linguistic_sum, 2),
-                "suggested_final_score": round(total_score_awarded, 2),
+                "suggested_final_score": int(round(total_score_awarded, 2)),
                 "plagiarism_percentage": int(round(max_observed_plagiarism, 2)),
                 "ai_percentage": int(round(max_observed_ai_plagiarism, 2)),
                 "evaluator_remarks": overall_feedback,

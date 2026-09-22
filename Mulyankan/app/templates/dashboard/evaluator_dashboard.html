@@ -41,97 +41,214 @@
         </div>
     </div>
 
-    <!-- Batch-Grouped Queues Header -->
-    <h5 class="tab-pane-title mb-3"><i class="bi bi-layers-half me-2"></i>Assigned Evaluation Batches</h5>
+    <h5 class="tab-pane-title mb-4"><i class="bi bi-layers-half me-2"></i>Assigned Evaluation Batches</h5>
 
-    {% for item in batch_queue %}
-    <div class="card tab-card mb-4">
-        <div class="card-body">
-            <div class="batch-header">
-                <div>
-                    <h6 class="section-title mb-0">{{ item.batch_name }}</h6>
-                    <span class="section-subtitle"><strong>Status: {{ item.batch_status }}</strong></span>
-                </div>
-                <div>
-                    <span class="badge badge-pending">{{ item.pending_count }} Pending</span>
-                    <span class="badge badge-completed">{{ item.reviewed_count }} Reviewed</span>
-                </div>
-            </div>
+    <div class="mb-4">
+        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+            <button class="btn p-0 text-start border-0 shadow-none d-flex align-items-center gap-2" 
+                    type="button" 
+                    data-bs-toggle="collapse" 
+                    data-bs-target="#collapsePendingSection">
+                <h6 class="tab-pane-title mb-0">
+                    <i class="bi bi-hourglass-split text-warning me-2"></i>Pending Review ({{ total_pending }})
+                </h6>
+                <i class="bi bi-chevron-down fs-6"></i>
+            </button>
+        </div>
 
-            <div class="table-responsive">
-                <table class="table dashboard-table align-middle mb-0">
-                    <thead>
-                        <tr>
-                            <th scope="col" class="col-25">Enrollment No</th>
-                            <th scope="col" class="col-25">Course</th>
-                            <th scope="col">Status</th>
-                            <th scope="col" class="text-end">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for sub in item.submissions|slice:":2" %}
-                        <tr>
-                            <td class="cell-primary">{{ sub.enrollment_number }}</td>
-                            <td class="cell-primary">{{ sub.course.course_code }}</td>
-                            <td class="cell-primary">
-                                {% if sub.status == 'Pending Review' %}
-                                    <span class="badge badge-pending">{{ sub.status }}</span>
-                                {% else %}
-                                    <span class="badge badge-completed">{{ sub.status }}</span>
-                                {% endif %}
-                            </td>
-                            <td class="text-end">
-                                <a href="{% url 'evaluate_submission' sub.id %}" class="btn btn-sm btn-signin">
-                                    <i class="bi bi-pencil-square me-1"></i> Evaluate
-                                </a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+        <div class="collapse show" id="collapsePendingSection">
+            {% for item in batch_queue %}
+                {% if item.pending_count > 0 %}
+                <div class="card tab-card mb-4">
+                    <div class="card-body">
+                        
+                        <div class="batch-header mb-3">
+                            <div>
+                                <h6 class="section-title mb-0">{{ item.batch_name }}</h6>
+                                <span class="section-subtitle"><strong>Status: {{ item.batch_status }}</strong></span>
+                            </div>
+                            <div>
+                                <span class="badge badge-pending">{{ item.pending_count }} Pending</span>
+                                <span class="badge badge-completed">{{ item.reviewed_count }} Reviewed</span>
+                            </div>
+                        </div>
 
-            {% if item.submissions|length > 2 %}
-            <div class="collapse mt-2" id="collapseBatch{{ forloop.counter }}">
-                <div class="table-responsive">
-                    <table class="table dashboard-table align-middle mb-0 border-top-0">
-                        <tbody>
-                            {% for sub in item.submissions|slice:"2:" %}
-                            <tr>
-                                <td class="cell-primary col-25">{{ sub.enrollment_number }}</td>
-                                <td class="cell-primary col-25">{{ sub.course.course_code }}</td>
-                                <td class="cell-primary">
-                                    {% if sub.status == 'Pending Review' %}
-                                        <span class="badge badge-pending">{{ sub.status }}</span>
-                                    {% else %}
-                                        <span class="badge badge-completed">{{ sub.status }}</span>
-                                    {% endif %}
-                                </td>
-                                <td class="text-end">
-                                    <a href="{% url 'evaluate_submission' sub.id %}" class="btn btn-sm btn-signin">
-                                        <i class="bi bi-pencil-square me-1"></i> Evaluate
-                                    </a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                        <div class="table-responsive">
+                            <table class="table dashboard-table align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="col-25">Enrollment No</th>
+                                        <th scope="col" class="col-25">Course</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col" class="text-end">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for sub in item.pending_submissions|slice:":2" %}
+                                        <tr>
+                                            <td class="cell-primary">{{ sub.enrollment_number }}</td>
+                                            <td class="cell-primary">{{ sub.course.course_code }}</td>
+                                            <td class="cell-primary">
+                                                <span class="badge badge-pending">{{ sub.status }}</span>
+                                            </td>
+                                            <td class="text-end">
+                                                <a href="{% url 'evaluate_submission' sub.id %}" class="btn btn-sm btn-signin">
+                                                    <i class="bi bi-pencil-square me-1"></i> Evaluate
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Remaining Submissions (View More Toggle) -->
+                        {% if item.pending_count > 2 %}
+                        <div class="collapse mt-2" id="collapsePendingMore{{ forloop.counter }}">
+                            <div class="table-responsive">
+                                <table class="table dashboard-table align-middle mb-0 border-top-0">
+                                    <tbody>
+                                        {% for sub in item.pending_submissions|slice:"2:" %}
+                                            <tr>
+                                                <td class="cell-primary col-25">{{ sub.enrollment_number }}</td>
+                                                <td class="cell-primary col-25">{{ sub.course.course_code }}</td>
+                                                <td class="cell-primary">
+                                                    <span class="badge badge-pending">{{ sub.status }}</span>
+                                                </td>
+                                                <td class="text-end">
+                                                    <a href="{% url 'evaluate_submission' sub.id %}" class="btn btn-sm btn-signin">
+                                                        <i class="bi bi-pencil-square me-1"></i> Evaluate
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="text-center mt-2">
+                            <button class="btn btn-sm btn-link toggle-btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePendingMore{{ forloop.counter }}">
+                                View All ({{ item.pending_count|add:"-2" }} More) <i class="bi bi-chevron-down ms-1"></i>
+                            </button>
+                        </div>
+                        {% endif %}
+
+                    </div>
                 </div>
-            </div>
-            <div class="text-center mt-2">
-                <button class="btn btn-sm btn-link toggle-btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBatch{{ forloop.counter }}">
-                    View All ({{ item.submissions|length|add:"-2" }} More) <i class="bi bi-chevron-down ms-1"></i>
-                </button>
-            </div>
+                {% endif %}
+            {% empty %}
+                <div class="empty-state-box mb-4">
+                    <i class="bi bi-folder-check icon-success d-block mb-2"></i>
+                    <span class="empty-text">No assignments allocated to your account yet.</span>
+                </div>
+            {% endfor %}
+
+            {% if total_pending == 0 and total_assigned > 0 %}
+                <div class="empty-state-box mb-4">
+                    <i class="bi bi-check-all text-success fs-1 d-block mb-1"></i>
+                    <span class="empty-text">All assigned pending reviews are complete!</span>
+                </div>
             {% endif %}
         </div>
     </div>
-    {% empty %}
-    <div class="empty-state-box">
-        <i class="bi bi-folder-check icon-success d-block mb-2"></i>
-        <span class="empty-text">No assignments allocated to your account yet.</span>
+
+    {% if total_reviewed > 0 %}
+    <div class="mt-4">
+        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+            <button class="btn p-0 text-start border-0 shadow-none d-flex align-items-center gap-2 collapsed" 
+                    type="button" 
+                    data-bs-toggle="collapse" 
+                    data-bs-target="#collapseCompletedSection">
+                <h6 class="tab-pane-title mb-0">
+                    <i class="bi bi-check-circle-fill text-success me-2"></i>Completed ({{ total_reviewed }})
+                </h6>
+                <i class="bi bi-chevron-down fs-6"></i>
+            </button>
+        </div>
+
+        <div class="collapse" id="collapseCompletedSection">
+            {% for item in batch_queue %}
+                {% if item.reviewed_count > 0 %}
+                <div class="card tab-card mb-4">
+                    <div class="card-body">
+                        
+                        <div class="batch-header mb-3">
+                            <div>
+                                <h6 class="section-title mb-0">{{ item.batch_name }}</h6>
+                                <span class="section-subtitle"><strong>Status: {{ item.batch_status }}</strong></span>
+                            </div>
+                            <div>
+                                <span class="badge badge-pending">{{ item.pending_count }} Pending</span>
+                                <span class="badge badge-completed">{{ item.reviewed_count }} Reviewed</span>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table dashboard-table align-middle mb-0 bg-light rounded">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="col-25">Enrollment No</th>
+                                        <th scope="col" class="col-25">Course</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col" class="text-end">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for sub in item.reviewed_submissions|slice:":2" %}
+                                        <tr>
+                                            <td class="cell-primary">{{ sub.enrollment_number }}</td>
+                                            <td class="cell-primary">{{ sub.course.course_code }}</td>
+                                            <td class="cell-primary">
+                                                <span class="badge badge-completed">{{ sub.status }}</span>
+                                            </td>
+                                            <td class="text-end">
+                                                <a href="{% url 'evaluate_submission' sub.id %}" class="btn btn-sm btn-signin">
+                                                    <i class="bi bi-eye me-1"></i> View
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {% if item.reviewed_count > 2 %}
+                        <div class="collapse mt-2" id="collapseCompletedMore{{ forloop.counter }}">
+                            <div class="table-responsive">
+                                <table class="table dashboard-table align-middle mb-0 border-top-0 bg-light">
+                                    <tbody>
+                                        {% for sub in item.reviewed_submissions|slice:"2:" %}
+                                            <tr>
+                                                <td class="cell-primary col-25">{{ sub.enrollment_number }}</td>
+                                                <td class="cell-primary col-25">{{ sub.course.course_code }}</td>
+                                                <td class="cell-primary">
+                                                    <span class="badge badge-completed">{{ sub.status }}</span>
+                                                </td>
+                                                <td class="text-end">
+                                                    <a href="{% url 'evaluate_submission' sub.id %}" class="btn btn-sm btn-outline-secondary">
+                                                        <i class="bi bi-eye me-1"></i> View
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="text-center mt-2">
+                            <button class="btn btn-sm btn-link toggle-btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCompletedMore{{ forloop.counter }}">
+                                View All ({{ item.reviewed_count|add:"-2" }} More) <i class="bi bi-chevron-down ms-1"></i>
+                            </button>
+                        </div>
+                        {% endif %}
+
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
     </div>
-    {% endfor %}
+    {% endif %}
 
 </div>
 {% endblock %}

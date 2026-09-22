@@ -476,12 +476,13 @@ def evaluator_dashboard(request):
             batch_queue[batch_id] = {
                 'batch_name': sub.batch.batch_name,
                 'batch_status': sub.batch.status,
-                'submissions': [],
+                'pending_submissions': [],
+                'reviewed_submissions': [],
                 'pending_count': 0,
                 'reviewed_count': 0,
             }
         
-        batch_queue[batch_id]['submissions'].append(sub)
+        batch_queue[batch_id]['pending_submissions'].append(sub) if sub.status == 'Pending Review' else batch_queue[batch_id]['reviewed_submissions'].append(sub)
         if sub.status == 'Pending Review':
             batch_queue[batch_id]['pending_count'] += 1
         else:
@@ -519,11 +520,14 @@ def evaluate_submission(request, submission_id):
     total_max_marks = sum(item.get('max_marks', 0) for item in result.audit_logic)
 
     if request.method == "POST":
+        if submission.status == 'Reviewed':
+            messages.warning(request, "This evaluation is already finalized and cannot be modified.")
+            return redirect('evaluate_submission', submission_id=submission.id)
         try:
             human_score = float(request.POST.get('human_final_score', 0))
         except ValueError:
             human_score = -1
-        remarks = request.POST.get('evaluator_remarks', '').strip()
+        remarks = request.POST.get('evaluator_remarks', 'No remarks provided').strip()
 
         if human_score < 0 or human_score > total_max_marks:
             messages.error(request, f"Score must be between 0 and {total_max_marks}.")
