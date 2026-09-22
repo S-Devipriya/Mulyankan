@@ -1,4 +1,18 @@
+function initToasts() {
+    const toastElements = document.querySelectorAll('.toast');
+    toastElements.forEach(toastEl => {
+        try {
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        } catch (e) {
+            console.error('Toast initialization error:', e);
+        }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    initToasts();
+
     const evaluatorSelect = document.getElementById('evaluatorSelect');
     const courseCheckboxes = document.querySelectorAll('input[name="course_ids"]');
 

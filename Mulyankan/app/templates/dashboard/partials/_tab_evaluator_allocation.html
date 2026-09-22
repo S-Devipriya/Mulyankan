@@ -88,7 +88,11 @@
                                             <select name="evaluator_id" class="form-select form-select-sm inline-select" required>
                                                 <option value="" selected disabled>Select...</option>
                                                 {% for evaluator in evaluators %}
-                                                    <option value="{{ evaluator.id }}">{{ evaluator.username }}</option>
+                                                    {% for exp in evaluator.evaluatorexpertise_set.all %}
+                                                        {% if exp.course_id == sub.course.id %}
+                                                            <option value="{{ evaluator.id }}">{{ evaluator.username }}</option>
+                                                        {% endif %}
+                                                    {% endfor %}
                                                 {% endfor %}
                                             </select>
                                             <button type="submit" class="btn btn-sm btn-signin">
