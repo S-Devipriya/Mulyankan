@@ -62,6 +62,12 @@
                            {% if user.role == 'Admin' or user.role == 'Evaluator' or user.is_superuser %}
                             <li><hr class="dropdown-divider"></li>
                             <li>
+                                <a class="dropdown-item {% if request.resolver_match.url_name == 'evaluator_guide' %}active{% endif %}" href="{% url 'evaluator_guide' %}">
+                                    <i class="bi bi-book me-2"></i>Evaluator Guide
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
                                 <a class="dropdown-item {% if request.resolver_match.url_name == 'result' %}active{% endif %}" href="{% url 'result' %}">
                                     <i class="bi bi-file-earmark-bar-graph me-2"></i>Results
                                 </a>

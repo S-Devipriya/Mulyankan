@@ -209,4 +209,17 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+
+    const exportBtn = document.getElementById('printBtn');
+    if (printBtn) {
+        printBtn.addEventListener('click', function() {
+            // Expand accordions
+            const accordionElements = document.querySelectorAll('#questionAuditAccordion .accordion-collapse');
+            accordionElements.forEach(el => {
+                el.classList.add('show');
+            });
+
+            window.print();
+        });
+    }
 });

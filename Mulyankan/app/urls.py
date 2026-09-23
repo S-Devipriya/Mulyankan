@@ -8,6 +8,7 @@ urlpatterns = [
     path('login', views.login_user, name='login'),
     path('evaluator-dashboard/', views.evaluator_dashboard, name='evaluator_dashboard'),
     path('evaluator-dashboard/evaluate/<int:submission_id>/', views.evaluate_submission, name='evaluate_submission'),
+    path('evaluator-guide/', views.evaluator_guide, name='evaluator_guide'),
     path('logout', views.logout_user, name='logout'),
     path('profile/', views.profile_page, name='profile'),
     path('result', views.result_page, name='result'),
@@ -26,4 +27,5 @@ urlpatterns = [
     path('admin-dashboard/update-assignment-schemes-json/', views.update_assignment_schemes_json, name='update_assignment_schemes_json'),
     path('admin-dashboard/export-csv/', views.export_results_csv, name='export_results_csv'),
     path('admin-dashboard/export-csv/<int:batch_id>/', views.export_results_csv, name='export_batch_results_csv'),
+    path('admin-dashboard/<int:submission_id>/audit-report/', views.submission_audit_report, name='submission_audit_report'),
 ]

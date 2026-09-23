@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4" id="evaluator-pane">
+    <!-- Action Bar (Hidden in Print) -->
+    <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
+        <div>
+            <h5 class="mb-0">Official Evaluation Audit Report</h5>
+            <span class="text-muted small">Enrollment: <strong>{{ submission.enrollment_number }}</strong> | Course: <strong>{{ submission.course.course_code }}</strong></span>
+        </div>
+        <button type="button" class="btn btn-sm btn-signin no-print" onclick="window.print()">
+            <i class="bi bi-printer me-1"></i> Print Report
+        </button>
+    </div>
+
+    <!-- Printable Header -->
+     <h6 class="mb-3">Submission Details</h6>
+    <div class="card mb-4 border">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-6">
+                    <p class="mb-1 small"><strong>Enrollment No:</strong> {{ submission.enrollment_number }}</p>
+                    <p class="mb-1 small"><strong>Course Code:</strong> {{ submission.course.course_code }}</p>
+                    <p class="mb-1 small"><strong>Batch:</strong> {{ submission.batch.batch_name }}</p>
+                    <p class="mb-0 small"><strong>Evaluator:</strong> {{ submission.evaluator.username|default:"Unassigned" }}</p>
+                </div>
+                <div class="col-6 text-end">
+                    <h6>Evaluation Summary</h6>
+                    <p class="mb-1 small"><strong>Status:</strong> {{ submission.status }}</p>
+                    <p class="mb-1 small"><strong>Plagiarism Risk:</strong> {{ result.plagiarism_percentage }}%</p>
+                    <p class="mb-1 small"><strong>AI Risk:</strong> {{ result.ai_percentage }}%</p>
+                    <p class="mb-0 small"><strong>Final Human Score:</strong> <span class="text-success fw-bold">{{ result.human_final_score }} / {{ total_max_marks }}</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Question Breakdown -->
+    <h6 class="mb-3">Per-Question AI Rationale & Integrity Checks</h6>
+    {% for item in audit_logic %}
+    <div class="card mb-3 border">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <strong>Question {{ item.question_number }}</strong>
+            <span class="fw-bold">Score: {{ item.score_awarded }} / {{ item.max_marks }}</span>
+        </div>
+        <div class="card-body fs-7">
+            <p class="mb-2"><strong>AI Feedback:</strong> {{ item.feedback }}</p>
+            <div class="p-2 bg-light rounded border mb-2">
+                <span class="d-block small text-muted"><strong>Textbook Overlap:</strong> {{ item.textbook_plagiarism_score|default:"0.0" }}% | <strong>AI Detection:</strong> {{ item.ai_plagiarism_score|default:"0.0" }}% | <strong>Peer Overlap:</strong> {{ item.peer_plagiarism_score|default:"0.0" }}%</span>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Final Evaluator Remarks -->
+     <h6 class="mb-3">Evaluator Remarks & Comments</h6>
+    <div class="card border mb-4">
+        <div class="card-body">
+            <p class="mb-0 text-wrap">{{ result.evaluator_remarks|linebreaksbr|default:"No remarks provided." }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

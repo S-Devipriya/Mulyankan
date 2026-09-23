@@ -7,9 +7,9 @@
             <span class="tab-pane-subtitle">View and export final evaluation scores across batches.</span>
         </div>
         <div class="d-flex align-items-center gap-2">
-            <div class="input-group input-group-sm">
-                <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-                <input type="text" id="resultsSearchInput" class="form-control" placeholder="Search Enrollment / Course...">
+            <div class="input-group input-group-sm search-bar-group">
+                <span class="input-group-text search-icon-bg"><i class="bi bi-search search-icon-navy"></i></span>
+                <input type="text" id="resultsSearchInput" class="form-control search-bar-input" placeholder="Search Enrollment / Course...">
             </div>
             <a href="{% url 'export_results_csv' %}" class="btn btn-signin text-nowrap px-3">
                 <i class="bi bi-download me-1"></i> Export All CSV
@@ -38,11 +38,12 @@
                 <table class="table dashboard-table align-middle" id="table-batch-{{ item.batch_id }}">
                     <thead>
                         <tr>
-                            <th scope="col" style="width: 15%;">Sub ID</th>
-                            <th scope="col" class="col-25">Enrollment No</th>
-                            <th scope="col" class="col-25">Course Code</th>
-                            <th scope="col">Evaluator</th>
-                            <th scope="col" class="text-center">
+                            <th scope="col" style="width: 8%;">Sub ID</th>
+                            <th scope="col" style="width: 16%;">Enrollment No</th>
+                            <th scope="col" style="width: 14%;">Course Code</th>
+                            <th scope="col" style="width: 14%;">Evaluator</th>
+                            <th scope="col" style="width: 26%;">Feedback</th>
+                            <th scope="col" class="text-center" style="width: 10%;">
                                 <div class="d-flex align-items-center justify-content-center gap-1">
                                     <span>Final Score</span>
                                     <button type="button" 
@@ -53,7 +54,7 @@
                                         <i class="bi bi-arrow-down-up fs-7"></i>
                                     </button>
                                 </div>
-                            </th>
+                            </th><th scope="col" class="text-center" style="width: 12%;">Action</th>
                         </tr>
                     </thead>
                     <tbody class="batch-table-body">
@@ -64,12 +65,23 @@
                             <td class="cell-primary enrollment-cell">{{ res.submission.enrollment_number }}</td>
                             <td class="cell-primary course-cell">{{ res.submission.course.course_code }}</td>
                             <td class="cell-primary">{{ res.submission.evaluator.username|default:"Unassigned" }}</td>
-                            <td class="text-center score-cell fw-bold">
+                            <td class="cell-primary">
+                                <textarea class="form-control form-control-sm bg-light fs-7 small muted" rows="2" readonly>{{ res.evaluator_remarks }}
+                                </textarea>
+                            </td>
+                            <td class="cell-primary text-center fw-bold">
                                 {% if res.human_final_score is not None %}
                                     {{ res.human_final_score }}
                                 {% else %}
                                     Pending
                                 {% endif %}
+                            </td>
+                            <td class="cell-primary text-center">
+                                <a href="{% url 'submission_audit_report' res.submission.id %}" 
+                                target="_blank" 
+                                class="btn btn-sm btn-signin text-nowrap">
+                                    <i class="bi bi-file-earmark-text me-1"></i> View Report
+                                </a>
                             </td>
                         </tr>
                         {% endfor %}

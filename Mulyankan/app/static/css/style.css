@@ -541,3 +541,65 @@ code {
     cursor: not-allowed;
     box-shadow: none;
 }
+
+.search-bar-group {
+    width: 320px;
+    max-width: 100%;
+}
+
+.search-icon-bg {
+    background-color: #1B365D;
+    border: 1px solid #1B365D;
+    padding-left: 0.75rem;
+    padding-right: 0.5rem;
+}
+
+.search-icon-navy {
+    color: #FFFFFF;
+    font-size: 0.875rem;
+}
+
+.search-bar-input {
+    border: 1px solid #1B365D;
+    font-size: 0.8125rem;
+    padding-left: 0.25rem;
+}
+
+.search-bar-input:focus {
+    border-color: #227B9B;
+    box-shadow: none;
+}
+
+@media print {
+    /* Hide everything except the evaluator pane */
+    nav, .navbar, .btn-nav, .no-print, .col-lg-6:first-child {
+        display: none !important;
+    }
+
+    /* Expand the evaluator pane to full page width and remove scrolling bounds */
+    body, .container-fluid, #evaluator-pane, .col-lg-6 {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
+        position: static !important;
+    }
+
+    /* Keep accordion items fully visible without borders collapsing */
+    #questionAuditAccordion .accordion-collapse {
+        display: block !important;
+        height: auto !important;
+        visibility: visible !important;
+    }
+
+    .accordion-button::after {
+        display: none !important;
+    }
+
+    .accordion-item {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        margin-bottom: 1rem;
+        border: 1px solid #dee2e6 !important;
+    }
+}

@@ -14,6 +14,9 @@
                 Enrollment: <strong>{{ submission.enrollment_number }}</strong> 
                 <span class="status-label">({{ submission.course.course_code }})</span>
             </span>
+            <button type="button" class="btn btn-sm btn-nav no-print ms-1" id="printBtn">
+                <i class="bi bi-printer me-1"></i> Print Report
+            </button>
         </div>
 
         <!-- Queue Nav Controls -->
@@ -44,7 +47,7 @@
 
         <!-- Right Pane: AI Metrics & Human Review Form -->
         <div class="col-12 col-lg-6 h-100">
-            <div class="card tab-card mb-3 overflow-auto">
+            <div class="card tab-card mb-3 overflow-auto" id="evaluator-pane">
                 <div class="card-body">
                     
                     <!-- Overall AI Summary Header -->
@@ -219,7 +222,13 @@
 
                         <div class="mb-3">
                             <label class="form-label-panel">Evaluator Remarks</label>
-                            <textarea class="form-control form-control-sm bg-light" rows="3" disabled readonly>{{ result.evaluator_remarks|default:"No remarks provided." }}</textarea>
+                            <!-- Visible in UI, hidden in Print -->
+                            <textarea class="form-control form-control-sm bg-light d-print-none" rows="3" disabled readonly>{{ result.evaluator_remarks|default:"No remarks provided." }}</textarea>
+
+                            <!-- Hidden in UI, visible in Print -->
+                            <div class="d-none d-print-block p-2 border rounded bg-light text-wrap">
+                                {{ result.evaluator_remarks|linebreaksbr }}
+                            </div>
                         </div>
 
                         <div class="badge badge-navy py-2 text-center w-100">
@@ -243,7 +252,12 @@
 
                         <div class="mb-3">
                             <label class="form-label-panel">AI Generated Feedback</label>
-                            <textarea class="form-control form-control-sm bg-light" rows="4" readonly>{{ result.evaluator_remarks }}</textarea>
+                            <!-- Visible in UI, hidden in Print -->
+                            <textarea class="form-control form-control-sm bg-light text-wrap d-print-none" rows="4" readonly>{{ result.evaluator_remarks }}</textarea>
+                            <!-- Hidden in UI, visible in Print -->
+                            <div class="d-none d-print-block p-2 border rounded bg-light text-wrap">
+                                {{ result.evaluator_remarks|linebreaksbr }}
+                            </div>
                         </div>
 
                         <div class="mb-3">

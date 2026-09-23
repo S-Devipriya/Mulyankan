@@ -513,7 +513,7 @@ def export_results_csv(request, batch_id=None):
     results = results.select_related('submission__batch', 'submission__course')
 
     writer = csv.writer(response)
-    writer.writerow(['Enrollment Number', 'Course Code', 'Batch Name', 'Evaluator', 'Final Score'])
+    writer.writerow(['Enrollment Number', 'Course Code', 'Batch Name', 'Evaluator', 'Feedback' 'Final Score'])
 
     for res in results:
         writer.writerow([
@@ -521,10 +521,31 @@ def export_results_csv(request, batch_id=None):
             res.submission.course.course_code,
             res.submission.batch.batch_name,
             res.submission.evaluator.username,
+            res.evaluator_remarks if res.evaluator_remarks is not None else 'No Feedback Provided',
             res.human_final_score if res.human_final_score is not None else 'Pending'
         ])
 
     return response
+
+@admin_required
+def submission_audit_report(request, submission_id):
+    submission = get_object_or_404(AssignmentSubmission, id=submission_id)
+
+    result = getattr(submission, 'evaluation_result', None)
+    
+    audit_logic = []
+    if result and result.audit_logic:
+        audit_logic = result.audit_logic if isinstance(result.audit_logic, list) else []
+
+    total_max_marks = sum(item.get('max_marks', 0) for item in result.audit_logic)
+
+    context = {
+        'submission': submission,
+        'result': result,
+        'audit_logic': audit_logic,
+        'total_max_marks': total_max_marks,
+    }
+    return render(request, 'submission_audit_report.html', context)
 
 @evaluator_required
 def evaluator_dashboard(request):
@@ -628,6 +649,10 @@ def evaluate_submission(request, submission_id):
         'total_max_marks': total_max_marks,
     }
     return render(request, 'dashboard/evaluation_splitview.html', context)
+
+@evaluator_required
+def evaluator_guide(request):
+    return render(request, 'evaluator_guide.html')
 
 @login_required
 def registration_waiting(request):
