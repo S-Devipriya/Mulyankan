@@ -143,4 +143,53 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     }
+
+    // Results Tab: Search & Sort Logic
+    const searchInput = document.getElementById('resultsSearchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            const rows = document.querySelectorAll('.result-row');
+
+            rows.forEach(row => {
+                const enrollment = row.querySelector('.enrollment-cell')?.textContent.toLowerCase() || '';
+                const course = row.querySelector('.course-cell')?.textContent.toLowerCase() || '';
+                
+                if (enrollment.includes(query) || course.includes(query)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    }
+
+    // Sorting by Score
+    document.querySelectorAll('.sort-score-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const batchId = this.getAttribute('data-batch-id');
+            const currentOrder = this.getAttribute('data-order');
+            const nextOrder = currentOrder === 'desc' ? 'asc' : 'desc';
+            this.setAttribute('data-order', nextOrder);
+
+            const icon = this.querySelector('i');
+            if (icon) {
+                icon.className = nextOrder === 'desc' ? 'bi bi-sort-numeric-down' : 'bi bi-sort-numeric-up-alt';
+            }
+
+            const table = document.getElementById(`table-batch-${batchId}`);
+            if (!table) return;
+
+            const tbody = table.querySelector('.batch-table-body');
+            const rows = Array.from(tbody.querySelectorAll('.result-row'));
+
+            rows.sort((a, b) => {
+                const valA = parseFloat(a.querySelector('.score-cell')?.textContent.trim()) || -1;
+                const valB = parseFloat(b.querySelector('.score-cell')?.textContent.trim()) || -1;
+                return nextOrder === 'desc' ? valB - valA : valA - valB;
+            });
+
+            rows.forEach(row => tbody.appendChild(row));
+        });
+    });
 });

@@ -16,7 +16,7 @@ from app.services.plagiarism_checker import generate_course_peer_map
 from pathlib import Path
 from django.utils import timezone
 import threading
-import json
+import json, csv
 import zipfile
 
 # Create your views here.
@@ -183,6 +183,23 @@ def admin_dashboard(request):
             except json.JSONDecodeError:
                 schemes_map = {}
 
+    results_by_batch = {}
+
+    for batch in EvaluationBatch.objects.all():
+        batch_submissions = AssignmentSubmission.objects.filter(batch=batch)
+        
+        # Selecting batches with no assignments left for review
+        if batch_submissions.exists() and not batch_submissions.filter(status='Pending Review').exists():
+            results = EvaluationResult.objects.filter(
+                submission__batch=batch
+            ).select_related('submission__course', 'submission__evaluator')
+            
+            results_by_batch[batch.id] = {
+                'batch_id': batch.id,
+                'batch_name': batch.batch_name,
+                'results': list(results)
+            }
+
     context = {
         'total_batches': EvaluationBatch.objects.count(),
         'assignments': AssignmentSubmission.objects.count(),
@@ -209,6 +226,7 @@ def admin_dashboard(request):
         'scheme_course_codes': list(schemes_map.keys()),
         'schemes_json_map': json.dumps(schemes_map),
         'result': EvaluationResult.objects.select_related('submission').all(),
+        'results_by_batch': results_by_batch.values(),
     }
     return render(request, 'dashboard/admin_dashboard.html', context)
 
@@ -460,6 +478,34 @@ def update_assignment_schemes_json(request):
             messages.success(request, f"Updated scheme for '{code}' with {len(q_keys)} question(s).")
 
     return redirect('admin_dashboard')
+
+@admin_required
+def export_results_csv(request, batch_id=None):
+    response = HttpResponse(content_type='text/csv')
+    
+    if batch_id:
+        batch = get_object_or_404(EvaluationBatch, id=batch_id)
+        response['Content-Disposition'] = f'attachment; filename="mulyankan_results_{batch.batch_name}.csv"'
+        results = EvaluationResult.objects.filter(submission__batch=batch)
+    else:
+        response['Content-Disposition'] = 'attachment; filename="mulyankan_results_all.csv"'
+        results = EvaluationResult.objects.all()
+
+    results = results.select_related('submission__batch', 'submission__course')
+
+    writer = csv.writer(response)
+    writer.writerow(['Enrollment Number', 'Course Code', 'Batch Name', 'Evaluator', 'Final Score'])
+
+    for res in results:
+        writer.writerow([
+            res.submission.enrollment_number,
+            res.submission.course.course_code,
+            res.submission.batch.batch_name,
+            res.submission.evaluator.username,
+            res.human_final_score if res.human_final_score is not None else 'Pending'
+        ])
+
+    return response
 
 @evaluator_required
 def evaluator_dashboard(request):

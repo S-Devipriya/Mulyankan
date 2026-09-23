@@ -24,4 +24,6 @@ urlpatterns = [
     path('admin-dashboard/run-batch-evaluation/', views.run_batch_evaluation, name='run_batch_evaluation'),
     path('admin-dashboard/update-courses-json/', views.update_courses_json, name='update_courses_json'),
     path('admin-dashboard/update-assignment-schemes-json/', views.update_assignment_schemes_json, name='update_assignment_schemes_json'),
+    path('admin-dashboard/export-csv/', views.export_results_csv, name='export_results_csv'),
+    path('admin-dashboard/export-csv/<int:batch_id>/', views.export_results_csv, name='export_batch_results_csv'),
 ]

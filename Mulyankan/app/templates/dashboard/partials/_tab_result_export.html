@@ -1,40 +1,101 @@
 <div class="tab-pane fade" id="export-pane">
-    <h6 class="tab-pane-title">Evaluated Batch Results</h6>
-    <p class="tab-pane-subtitle">Review fully evaluated batches and trigger JSON exports.</p>
-    <!-- temp content moved from results.html -->
-    <table class="table">
-        <tr>
-            <th rowspan="2">Enrollment Number</th>
-            <th rowspan="2">Course</th>
-            <th colspan="4">Suggested Score</th>
-            <th rowspan="2">Approved Score</th>
-            <th rowspan="2">Remarks</th>
-            <th rowspan="2">Evaluator</th>
-            <th rowspan="2">Audit Logic</th>
-            <th rowspan="2">Reviewed At</th>
-            <th rowspan="2">View Assignment</th>
-        </tr>
-        <tr>
-            <th>Content</th>
-            <th>Presentation</th>
-            <th>Linguistic</th>
-            <th>Total</th>
-        </tr>
-        {% for r in result %}
-        <tr>
-            <td>{{r.submission.enrollment_number}}</td>
-            <td>{{r.submission.course}}</td>
-            <td>{{r.score_content}}</td>
-            <td>{{r.score_presentation}}</td>
-            <td>{{r.score_linguistic}}</td>
-            <td>{{r.suggested_final_score}}</td>
-            <td>{{r.human_final_score}}</td>
-            <td><textarea class="form-control">{{r.evaluator_remarks}}</textarea></td>
-            <td>{{r.submission.evaluator}}</td>
-            <td><a href="#">View</a></td>
-            <td>{{r.reviewed_at}}</td>
-            <td><a href="{% url 'view_assignment' r.submission.id %}" target="_blank">View</a></td>
-        </tr>
-        {% endfor %}
-    </table>
+    
+    <!-- Top Action Bar for Search & Export all -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 border-bottom pb-3">
+        <div>
+            <h6 class="tab-pane-title">Batch Evaluation Result Export</h6>
+            <span class="tab-pane-subtitle">View and export final evaluation scores across batches.</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                <input type="text" id="resultsSearchInput" class="form-control" placeholder="Search Enrollment / Course...">
+            </div>
+            <a href="{% url 'export_results_csv' %}" class="btn btn-signin text-nowrap px-3">
+                <i class="bi bi-download me-1"></i> Export All CSV
+            </a>
+        </div>
+    </div>
+
+    <!-- Batch-wise Results Cards -->
+    {% for item in results_by_batch %}
+    <div class="card tab-card mb-4 result-batch-card" data-batch-id="{{ item.batch_id }}">
+        <div class="card-body">
+            
+            <div class="batch-header">
+                <div>
+                    <h6 class="section-title">{{ item.batch_name }}</h6>
+                    <span class="section-subtitle">Total Records: <strong>{{ item.results|length }}</strong></span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="{% url 'export_batch_results_csv' item.batch_id %}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export Batch CSV
+                    </a>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table dashboard-table align-middle" id="table-batch-{{ item.batch_id }}">
+                    <thead>
+                        <tr>
+                            <th scope="col" style="width: 15%;">Sub ID</th>
+                            <th scope="col" class="col-25">Enrollment No</th>
+                            <th scope="col" class="col-25">Course Code</th>
+                            <th scope="col">Evaluator</th>
+                            <th scope="col" class="text-center">
+                                <div class="d-flex align-items-center justify-content-center gap-1">
+                                    <span>Final Score</span>
+                                    <button type="button" 
+                                            class="btn btn-sm text-white p-0 border-0 sort-score-btn shadow-none" 
+                                            data-batch-id="{{ item.batch_id }}" 
+                                            data-order="desc" 
+                                            title="Sort by Score">
+                                        <i class="bi bi-arrow-down-up fs-7"></i>
+                                    </button>
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="batch-table-body">
+                        {% for res in item.results %}
+                        <!-- Rows past index 2 get the collapse class and batch-specific collapse ID -->
+                        <tr class="result-row {% if forloop.counter > 2 %}collapse collapse-row-batch-{{ item.batch_id }}{% endif %}">
+                            <td class="cell-primary">#{{ res.submission.id }}</td>
+                            <td class="cell-primary enrollment-cell">{{ res.submission.enrollment_number }}</td>
+                            <td class="cell-primary course-cell">{{ res.submission.course.course_code }}</td>
+                            <td class="cell-primary">{{ res.submission.evaluator.username|default:"Unassigned" }}</td>
+                            <td class="text-center score-cell fw-bold">
+                                {% if res.human_final_score is not None %}
+                                    {{ res.human_final_score }}
+                                {% else %}
+                                    Pending
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- View All Toggle Button -->
+            {% if item.results|length > 2 %}
+            <div class="text-center mt-2">
+                <button class="btn btn-sm btn-link toggle-btn" 
+                        type="button" 
+                        data-bs-toggle="collapse" 
+                        data-bs-target=".collapse-row-batch-{{ item.batch_id }}">
+                    View All ({{ item.results|length|add:"-2" }} More) <i class="bi bi-chevron-down ms-1"></i>
+                </button>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+    {% empty %}
+    <div class="empty-state-box">
+        <i class="bi bi-inbox icon-success d-block mb-2"></i>
+        <span class="empty-text">No evaluation results generated yet.</span>
+    </div>
+    {% endfor %}
 </div>
