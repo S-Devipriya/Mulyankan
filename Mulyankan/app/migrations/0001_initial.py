@@ -5,6 +5,7 @@ import django.contrib.auth.validators
 import django.db.models.deletion
 import django.utils.timezone
 import pgvector.django.vector
+from pgvector.django import VectorExtension
 from django.conf import settings
 from django.db import migrations, models
 
@@ -18,6 +19,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        VectorExtension(),
         migrations.CreateModel(
             name='Course',
             fields=[
