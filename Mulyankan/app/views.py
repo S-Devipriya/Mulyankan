@@ -610,21 +610,6 @@ def evaluate_submission(request, submission_id):
     }
     return render(request, 'dashboard/evaluation_splitview.html', context)
 
-@evaluator_required
-def retrigger_evaluation(request, submission_id):
-    submission = get_object_or_404(AssignmentSubmission, id=submission_id, evaluator=request.user)
-    
-    try:
-        with transaction.atomic():
-            evaluate_submission_pipeline(submission.id)
-            
-        messages.success(request, f"AI Evaluation successfully generated for #{submission.enrollment_number}.")
-    except Exception as e:
-        messages.error(request, f"Evaluation execution failed: {str(e)}. Previous evaluation preserved.")
-        print(f"[PIPELINE ERROR] {e}")
-
-    return redirect('evaluate_submission', submission_id=submission.id)
-
 @login_required
 def registration_waiting(request):
     return render(request, 'registration_waiting_page.html')

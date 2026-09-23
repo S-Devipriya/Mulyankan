@@ -7,33 +7,27 @@
     <!-- Top Action Bar -->
     <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom">
         <div class="d-flex align-items-center gap-3">
-            <a href="{% url 'evaluator_dashboard' %}" class="btn btn-sm btn-outline-secondary">
+            <a href="{% url 'evaluator_dashboard' %}" class="btn btn-sm btn-secondary">
                 <i class="bi bi-arrow-left me-1"></i> Queue
             </a>
             <span class="brand-title mb-0">
                 Enrollment: <strong>{{ submission.enrollment_number }}</strong> 
                 <span class="status-label">({{ submission.course.course_code }})</span>
             </span>
-            <form method="POST" action="{% url 'retrigger_evaluation' submission.id %}" class="d-inline">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-sm btn-outline-secondary">
-                    <i class="bi bi-arrow-clockwise me-1"></i> Re-run AI Evaluation
-                </button>
-            </form>
         </div>
 
         <!-- Queue Nav Controls -->
         <div class="d-flex gap-2">
             {% if prev_id %}
-                <a href="{% url 'evaluate_submission' prev_id %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-chevron-left me-1"></i> Previous</a>
+                <a href="{% url 'evaluate_submission' prev_id %}" class="btn btn-sm btn-primary"><i class="bi bi-chevron-left me-1"></i> Previous</a>
             {% else %}
-                <button class="btn btn-sm btn-outline-secondary" disabled><i class="bi bi-chevron-left me-1"></i> Previous</button>
+                <button class="btn btn-sm btn-secondary" disabled><i class="bi bi-chevron-left me-1"></i> Previous</button>
             {% endif %}
 
             {% if next_id %}
-                <a href="{% url 'evaluate_submission' next_id %}" class="btn btn-sm btn-outline-primary">Next <i class="bi bi-chevron-right ms-1"></i></a>
+                <a href="{% url 'evaluate_submission' next_id %}" class="btn btn-sm btn-primary">Next <i class="bi bi-chevron-right ms-1"></i></a>
             {% else %}
-                <button class="btn btn-sm btn-outline-secondary" disabled>Next <i class="bi bi-chevron-right ms-1"></i></button>
+                <button class="btn btn-sm btn-secondary" disabled>Next <i class="bi bi-chevron-right ms-1"></i></button>
             {% endif %}
         </div>
     </div>

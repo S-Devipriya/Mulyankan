@@ -192,4 +192,21 @@ document.addEventListener('DOMContentLoaded', function() {
             rows.forEach(row => tbody.appendChild(row));
         });
     });
+
+    const globalSearchInput = document.getElementById('globalResultsSearchInput');
+    if (globalSearchInput) {
+        globalSearchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            const rows = document.querySelectorAll('.global-result-row');
+
+            rows.forEach(row => {
+                const textContent = row.textContent.toLowerCase();
+                if (textContent.includes(query)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    }
 });

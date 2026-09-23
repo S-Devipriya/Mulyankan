@@ -8,7 +8,6 @@ urlpatterns = [
     path('login', views.login_user, name='login'),
     path('evaluator-dashboard/', views.evaluator_dashboard, name='evaluator_dashboard'),
     path('evaluator-dashboard/evaluate/<int:submission_id>/', views.evaluate_submission, name='evaluate_submission'),
-    path('evaluator-dashboard/evaluating/<int:submission_id>/', views.retrigger_evaluation, name="retrigger_evaluation"),
     path('logout', views.logout_user, name='logout'),
     path('result', views.result_page, name='result'),
     path('assignment/<int:pk>/pdf/', views.view_assignment, name='view_assignment'),

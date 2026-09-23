@@ -1,20 +1,38 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}{% endblock %}
+{% block title %} Mulyankan | Assignment PDF {% endblock %}
 
 {% block content %}
-<h2>Viewing Assignment for: {{ submission.enrollment_number }}</h2>
-    {% if submission.file_path %}
-        <iframe 
-            src="{% url 'stream_assignment_pdf' submission.pk %}" 
-            width="100%" 
-            height="800px" 
-            style="border: none;">
-            <p>Your browser does not support inline PDFs. 
-               <a href="{% url 'stream_assignment_pdf' submission.pk %}">Download here</a>.
-            </p>
-        </iframe>
-    {% else %}
-        <p>No PDF file uploaded for this submission.</p>
-    {% endif %}
+<div class="container-fluid py-3">
+    
+    <!-- Top Action Bar -->
+    <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+        <span class="brand-title mb-0 fs-6">
+            Enrollment: <strong>{{ submission.enrollment_number }}</strong> 
+            <span class="status-label">({{ submission.course.course_code }})</span>
+        </span>
+        {% if submission.file_path %}
+            <a href="{% url 'stream_assignment_pdf' submission.pk %}" target="_blank" class="btn btn-sm btn-signin">
+                <i class="bi bi-box-arrow-up-right me-1"></i> Open in New Tab
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Main PDF Viewing Pane -->
+    <div class="card tab-card p-2 shadow-sm">
+        {% if submission.file_path %}
+            <iframe 
+                src="{% url 'stream_assignment_pdf' submission.pk %}" 
+                class="w-100 rounded border-0" 
+                style="height: 80vh;">
+            </iframe>
+        {% else %}
+            <div class="text-center py-5">
+                <span class="text-muted">No PDF document associated with this submission.</span>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
 {% endblock %}

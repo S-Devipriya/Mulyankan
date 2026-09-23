@@ -1,41 +1,92 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}{% endblock %}
+{% block title %} Mulyankan | Evaluation Results {% endblock %}
 
 {% block content %}
-    <table class="table">
-        <tr>
-            <th rowspan="2">Enrollment Number</th>
-            <th rowspan="2">Course</th>
-            <th colspan="4">Suggested Score</th>
-            <th rowspan="2">Approved Score</th>
-            <th rowspan="2">Remarks</th>
-            <th rowspan="2">Evaluator</th>
-            <th rowspan="2">Audit Logic</th>
-            <th rowspan="2">Reviewed At</th>
-            <th rowspan="2">View Assignment</th>
-        </tr>
-        <tr>
-            <th>Content</th>
-            <th>Presentation</th>
-            <th>Linguistic</th>
-            <th>Total</th>
-        </tr>
-        {% for r in result %}
-        <tr>
-            <td>{{r.submission.enrollment_number}}</td>
-            <td>{{r.submission.course}}</td>
-            <td>{{r.score_content}}</td>
-            <td>{{r.score_presentation}}</td>
-            <td>{{r.score_linguistic}}</td>
-            <td>{{r.suggested_final_score}}</td>
-            <td>{{r.human_final_score}}</td>
-            <td><textarea class="form-control">{{r.evaluator_remarks}}</textarea></td>
-            <td>{{r.submission.evaluator}}</td>
-            <td><a href="#">View</a></td>
-            <td>{{r.reviewed_at}}</td>
-            <td><a href="{% url 'view_assignment' r.submission.id %}" target="_blank">View</a></td>
-        </tr>
-        {% endfor %}
-    </table>
+<main class="main-container">
+    <div class="container-fluid px-4">
+        <!-- Header Action Bar -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 border-bottom pb-3">
+            <div>
+                <h5 class="tab-pane-title mb-1"><i class="bi bi-file-earmark-bar-graph me-2"></i>Evaluation Results at a Glance</h5>
+                <span class="status-label">Comprehensive overview of AI suggested scores and evaluator-approved marks.</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <div class="input-group input-group-sm" style="max-width: 280px;">
+                    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                    <input type="text" id="globalResultsSearchInput" class="form-control" placeholder="Search Enrollment, Course, Evaluator...">
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Results Table -->
+        <div class="table-responsive">
+            <table class="table dashboard-table align-middle mb-0" id="globalResultsTable">
+                <thead>
+                    <tr>
+                        <th rowspan="2" class="align-middle" style="width: 15%;">Enrollment No</th>
+                        <th rowspan="2" class="align-middle" style="width: 12%;">Course</th>
+                        <th colspan="4" class="text-center border-bottom-0">AI Suggested Score</th>
+                        <th rowspan="2" class="align-middle text-center" style="width: 12%;">Final Score</th>
+                        <th rowspan="2" class="align-middle" style="width: 20%;">Evaluator Remarks</th>
+                        <th rowspan="2" class="align-middle" style="width: 12%;">Evaluator</th>
+                        <th rowspan="2" class="align-middle" style="width: 12%;">Reviewed At</th>
+                        <th rowspan="2" class="align-middle text-end" style="width: 8%;">Assignment</th>
+                    </tr>
+                    <tr>
+                        <th class="text-center fw-normal" style="font-size: 0.75rem;">Content</th>
+                        <th class="text-center fw-normal" style="font-size: 0.75rem;">Presentation</th>
+                        <th class="text-center fw-normal" style="font-size: 0.75rem;">Linguistic</th>
+                        <th class="text-center fw-bold" style="font-size: 0.75rem;">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in result %}
+                    <tr class="global-result-row">
+                        <td class="cell-primary enrollment-cell">
+                            <strong>{{ r.submission.enrollment_number }}</strong>
+                        </td>
+                        <td class="cell-primary course-cell">
+                            <span class="badge badge-teal">{{ r.submission.course.course_code }}</span>
+                        </td>
+                        <td class="text-center cell-secondary">{{ r.score_content|default:"-" }}</td>
+                        <td class="text-center cell-secondary">{{ r.score_presentation|default:"-" }}</td>
+                        <td class="text-center cell-secondary">{{ r.score_linguistic|default:"-" }}</td>
+                        <td class="text-center fw-bold cell-secondary">{{ r.suggested_final_score|default:"-" }}</td>
+                        <td class="text-center score-cell">
+                            {% if r.human_final_score is not None %}
+                                <span class="badge badge-completed fs-7">{{ r.human_final_score }}</span>
+                            {% else %}
+                                <span class="badge badge-pending">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td class="remarks-cell">
+                            <textarea class="form-control form-control-sm bg-light fs-7" rows="2" readonly>{{ r.evaluator_remarks|default:"No remarks provided." }}</textarea>
+                        </td>
+                        <td class="cell-secondary evaluator-cell">
+                            {{ r.submission.evaluator.username|default:"Unassigned" }}
+                        </td>
+                        <td class="status-label fs-7">
+                            {{ r.reviewed_at|date:"M d, Y H:i"|default:"-" }}
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'view_assignment' r.submission.id %}" target="_blank" class="btn btn-sm btn-signin text-nowrap">
+                                <i class="bi bi-file-earmark-pdf me-1"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="11" class="empty-state-box">
+                            <i class="bi bi-inbox icon-success d-block mb-2"></i>
+                            <span class="empty-text">No evaluation results recorded yet.</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
 {% endblock %}
