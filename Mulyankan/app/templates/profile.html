@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} Mulyankan | User Profile {% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 800px;">
+    
+    <div class="card tab-card">
+        <div class="card-body">
+            
+            <div class="d-flex align-items-center gap-3 mb-4 border-bottom pb-3">
+                <div class="metric-icon-wrap fs-3" style="width: 56px; height: 56px;">
+                    <i class="bi bi-person-circle"></i>
+                </div>
+                <div>
+                    <h5 class="tab-pane-title mb-1">{{ profile_user.username }}</h5>
+                    <span class="badge badge-teal">{{ profile_user.role|default:"User" }}</span>
+                </div>
+            </div>
+
+            <!-- Basic Info Grid -->
+            <div class="row g-3 mb-3">
+                <div class="col-12 col-md-6">
+                    <label class="form-label-panel d-block">Username</label>
+                    <input type="text" class="form-control form-control-sm bg-light" value="{{ profile_user.username }}" readonly>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label-panel d-block">Email Address</label>
+                    <input type="email" class="form-control form-control-sm bg-light" value="{{ profile_user.email }}" readonly>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label-panel d-block">System Role</label>
+                    <input type="text" class="form-control form-control-sm bg-light" value="{{ profile_user.role|default:'User' }}" readonly>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label-panel d-block">Date Joined</label>
+                    <input type="text" class="form-control form-control-sm bg-light" value="{{ profile_user.date_joined|date:'F d, Y' }}" readonly>
+                </div>
+            </div>
+
+            <!-- Role-Specific Special Section -->
+            {% if profile_user.role == 'Evaluator' %}
+            <div class="border-top pt-3 mt-4">
+                <h6 class="tab-pane-title mb-2">
+                    <i class="bi bi-journal-bookmark me-1"></i> Assigned Expertise Courses
+                </h6>
+                {% if user_courses %}
+                    <div class="d-flex flex-wrap gap-2 mt-2">
+                        {% for course in user_courses %}
+                        <ul>
+                            <li type="none">
+                            <span class="section-title">
+                                <strong>{{ course.course_code }}</strong> - {{ course.course_name }}
+                            </span>
+                            </li>
+                        </ul>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted status-label mb-0">No expertise courses mapped yet. An admin can assign courses from the Evaluator Allocation panel.</p>
+                {% endif %}
+            </div>
+            {% elif profile_user.role == 'User' or not profile_user.role %}
+            <div class="badge badge-navy fs-7 mt-4 mb-0 d-flex align-items-center gap-2">
+                <i class="bi bi-info-circle-fill fs-5"></i>
+                <span>An admin will assign you a role soon. Please wait a few days for your registration to complete.</span>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}

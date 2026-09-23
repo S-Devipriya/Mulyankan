@@ -9,6 +9,7 @@ urlpatterns = [
     path('evaluator-dashboard/', views.evaluator_dashboard, name='evaluator_dashboard'),
     path('evaluator-dashboard/evaluate/<int:submission_id>/', views.evaluate_submission, name='evaluate_submission'),
     path('logout', views.logout_user, name='logout'),
+    path('profile/', views.profile_page, name='profile'),
     path('result', views.result_page, name='result'),
     path('assignment/<int:pk>/pdf/', views.view_assignment, name='view_assignment'),
     path('assignment/<int:pk>/stream/', views.stream_assignment_pdf, name='stream_assignment_pdf'),

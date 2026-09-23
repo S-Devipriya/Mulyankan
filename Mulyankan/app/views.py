@@ -98,6 +98,9 @@ def logout_user(request):
 
 @login_required
 def result_page(request):
+    if request.user.role not in ['Admin', 'Evaluator'] and not request.user.is_superuser:
+        messages.error(request, "You do not have permission to view evaluation results.")
+        return redirect('registration_waiting_page')
     results = {
         'result': EvaluationResult.objects.select_related('submission').all(),
     }
@@ -121,6 +124,22 @@ def stream_assignment_pdf(request, pk):
         raise Http404("File not found.")
     
     return FileResponse(open(resolved_path, 'rb'), content_type='application/pdf')
+
+@login_required
+def profile_page(request):
+    user = request.user
+    user_courses = []
+    
+    if user.role == 'Evaluator':
+        user_courses = Course.objects.filter(
+            evaluatorexpertise__user=user
+        ).order_by('course_code')
+
+    context = {
+        'profile_user': user,
+        'user_courses': user_courses,
+    }
+    return render(request, 'profile.html', context)
 
 @admin_required
 def admin_dashboard(request):

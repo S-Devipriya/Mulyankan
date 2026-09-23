@@ -197,6 +197,18 @@ a:hover {
     font-weight: 600;
 }
 
+.dropdown-item:hover {
+    color: #227B9B;
+    background-color: rgba(34, 123, 155, 0.1);
+    font-weight: 600;
+}
+
+.dropdown-item.active {
+    color: #227B9B;
+    background-color: transparent;
+    font-weight: 600;
+}
+
 /* Metrics Cards */
 .metric-card {
     border: none;
@@ -497,4 +509,35 @@ code {
     color: #05461c;
     border: 1px solid rgba(53, 220, 106, 0.75);
     font-weight: 600;
+}
+
+.btn-nav,
+.btn-nav.active {
+    background-color: #227B9B;
+    color: #FFFFFF;
+    font-weight: 500;
+    font-size: 0.875rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 6px;
+    border: 1px solid #227B9B;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-nav:hover {
+    background-color: #16a4c1ee;
+    border-color: #16a4c1ee;
+    color: #FFFFFF;
+    box-shadow: 0 3px 8px rgba(27, 54, 93, 0.2);
+}
+
+.btn-nav:disabled,
+.btn-nav.disabled {
+    background-color: #828e9e;
+    border-color: #8c9bae;
+    color: #FFFFFF;
+    opacity: 0.65;
+    cursor: not-allowed;
+    box-shadow: none;
 }
