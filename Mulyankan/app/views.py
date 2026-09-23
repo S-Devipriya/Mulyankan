@@ -588,6 +588,11 @@ def evaluate_submission(request, submission_id):
             submission.status = 'Reviewed'
             submission.save()
 
+            batch = submission.batch
+            if batch and not AssignmentSubmission.objects.filter(batch=batch, status='Pending Review').exists():
+                batch.status = 'Completed'
+                batch.save(update_fields=['status'])
+
             messages.success(request, f"Evaluation saved for Enrollment #{submission.enrollment_number}.")
 
             #auto-advance to next submission in batch if available
