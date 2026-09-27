@@ -513,7 +513,7 @@ def export_results_csv(request, batch_id=None):
     results = results.select_related('submission__batch', 'submission__course')
 
     writer = csv.writer(response)
-    writer.writerow(['Enrollment Number', 'Course Code', 'Batch Name', 'Evaluator', 'Feedback' 'Final Score'])
+    writer.writerow(['Enrollment Number', 'Course Code', 'Batch Name', 'Evaluator', 'Feedback', 'Final Score'])
 
     for res in results:
         writer.writerow([

@@ -107,7 +107,7 @@ class MulyankanTestCase(TestCase):
         self.assertEqual(self.submission_1.status, 'Pending Review')
         self.assertEqual(self.submission_1.evaluation_result.suggested_final_score, 20.0)
 
-    # UT-02: Role-Based Access Control (RBAC) & View Decorators
+    # ST-01: Role-Based Access Control (RBAC) & View Decorators
     def test_unauthenticated_user_redirects_to_login(self):
         response = self.client.get(reverse('admin_dashboard'))
         self.assertRedirects(response, reverse('login'))
@@ -142,7 +142,7 @@ class MulyankanTestCase(TestCase):
         response = self.client.get(reverse('evaluator_dashboard'))
         self.assertEqual(response.status_code, 200)
 
-    # UT-03: Profile View
+    # ST-02: Profile View
     def test_profile_page_access(self):
         self.client.login(username='evaluator_test', password='Password123!')
         response = self.client.get(reverse('profile'))
@@ -150,7 +150,7 @@ class MulyankanTestCase(TestCase):
         self.assertContains(response, 'evaluator_test')
         self.assertContains(response, 'BCS052')
 
-    # UT-04: Human-in-the-Loop (HITL) Score Override & Batch Progression
+    # ST-03: Human-in-the-Loop (HITL) Score Override & Batch Progression
     def test_human_evaluation_override_and_batch_completion(self):
         self.client.login(username='evaluator_test', password='Password123!')
 
@@ -191,7 +191,7 @@ class MulyankanTestCase(TestCase):
         #All submissions reviewed so Batch status must automatically transition to 'Completed'
         self.assertEqual(self.batch.status, 'Completed')
 
-    # UT-05: Score Validation Bounds
+    # ST-04: Score Validation Bounds
     def test_invalid_score_override_rejection(self):
         self.client.login(username='evaluator_test', password='Password123!')
         url = reverse('evaluate_submission', kwargs={'submission_id': self.submission_1.id})
@@ -207,7 +207,7 @@ class MulyankanTestCase(TestCase):
         self.assertNotEqual(self.submission_1.status, 'Reviewed')
         self.assertIsNone(self.submission_1.evaluation_result.human_final_score)
 
-    # UT-06: CSV Results Export
+    # ST-05: CSV Results Export
     def test_csv_export_endpoint(self):
         self.client.login(username='admin_test', password='Password123!')
         response = self.client.get(reverse('export_results_csv'))
@@ -221,7 +221,7 @@ class MulyankanTestCase(TestCase):
         csv_reader = list(csv.reader(StringIO(csv_content)))
         
         #Verifying Headers
-        self.assertEqual(csv_reader[0], ['Enrollment Number', 'Course Code', 'Batch Name', 'Evaluator', 'Final Score'])
+        self.assertEqual(csv_reader[0], ['Enrollment Number', 'Course Code', 'Batch Name', 'Evaluator', 'Feedback', 'Final Score'])
         
         #Collecting extracted enrollment numbers across data rows
         extracted_enrollments = [row[0] for row in csv_reader[1:]]
@@ -229,7 +229,7 @@ class MulyankanTestCase(TestCase):
         self.assertIn('2400000002', extracted_enrollments)
 
 class PlagiarismCheckerTestCase(TestCase):
-    # UT-07: Peer Plagiarism Computation for similar student responses
+    # UT-02: Peer Plagiarism Computation for similar student responses
     def test_compute_peer_similarity_high_overlap(self):
         text_a = "Dijkstra algorithm finds the shortest path in a weighted graph with non negative edge weights."
         text_b = "Dijkstra algorithm is used to find the shortest path in a weighted graph with non negative edge weights."
@@ -237,7 +237,7 @@ class PlagiarismCheckerTestCase(TestCase):
         score = compute_peer_similarity(text_a, text_b, n=4)
         self.assertGreaterEqual(score, 50.0)
 
-    # UT-08: Peer Plagiarism Computation for dissimilar student responses
+    # UT-03: Peer Plagiarism Computation for dissimilar student responses
     def test_compute_peer_similarity_low_overlap(self):
         text_a = "Python standard libraries provide built in data structures like lists and dictionaries."
         text_b = "Computer networking operates on OSI layers including physical data link transport and application."
@@ -245,7 +245,7 @@ class PlagiarismCheckerTestCase(TestCase):
         score = compute_peer_similarity(text_a, text_b, n=4)
         self.assertLess(score, 20.0)
 
-    # UT-09: Textbook Context Similarity Matching
+    # UT-04: Textbook Context Similarity Matching
     def test_compute_textbook_overlap_matching_chunks(self):
         student_answer = "Relational database management systems use SQL to execute queries and manage data in normalized tables."
         context_chunks = [
