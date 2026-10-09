@@ -191,7 +191,7 @@ def admin_dashboard(request):
     for ev in evaluators:
         assigned_courses = EvaluatorExpertise.objects.filter(user=ev).values_list('course_id', flat=True)
         expertise_map[ev.id] = list(assigned_courses)
-    unassigned_submissions = AssignmentSubmission.objects.filter(evaluator__isnull=True)
+    unassigned_submissions = AssignmentSubmission.objects.filter(batch__status='Ready', evaluator__isnull=True)
 
     schemes_file = settings.BASE_DIR / 'data' / 'assignment_schemes.json'
     schemes_map = {}
@@ -384,7 +384,11 @@ def run_batch_evaluation(request):
             messages.error(request, "Please select a valid batch to evaluate.")
             return redirect('admin_dashboard')
 
-        batch = get_object_or_404(EvaluationBatch, id=batch_id, status='Processing')
+        batch = get_object_or_404(EvaluationBatch, id=batch_id)
+        if batch.status == 'Ready':
+            messages.warning(request, f"Batch '{batch.batch_name}' is already ready for evaluator allocation.")
+            return redirect('admin_dashboard')
+        
         pending_submissions = AssignmentSubmission.objects.filter(
             batch=batch, 
             status='Pending Review'
@@ -397,29 +401,32 @@ def run_batch_evaluation(request):
         submission_ids = list(pending_submissions.values_list('id', flat=True))
 
         # Background Execution Thread
-        def process_batch_pipeline(sub_ids):
-            submissions = AssignmentSubmission.objects.filter(id__in=sub_ids).select_related('course')
-            course_codes = set(s.course.course_code for s in submissions if s.course)
+        def process_batch_pipeline(sub_ids, b_id):
+            try:
+                submissions = AssignmentSubmission.objects.filter(id__in=sub_ids).select_related('course')
+                course_codes = set(s.course.course_code for s in submissions if s.course)
 
-            # Step 1: Pre-compute peer plagiarism map across extracted_text
-            peer_maps_by_course = {}
-            for course_code in course_codes:
-                peer_maps_by_course[course_code] = generate_course_peer_map(course_code, batch_id, min_threshold=50.0)
+                # Step 1: Pre-compute peer plagiarism map across extracted_text
+                peer_maps_by_course = {}
+                for course_code in course_codes:
+                    peer_maps_by_course[course_code] = generate_course_peer_map(course_code, batch_id, min_threshold=50.0)
 
-            # Step 2: Run pipeline.py with real pre-computed peer data
-            for sub in submissions:
-                try:
-                    c_code = sub.course.course_code if sub.course else ""
-                    c_peer_map = peer_maps_by_course.get(c_code, {})
-                    
-                    evaluate_submission_pipeline(sub.id, peer_map=c_peer_map)
-                except Exception as e:
-                    print(f"[PIPELINE BATCH ERROR] Failed evaluating submission ID {sub.id}: {e}")
-                finally:
-                    batch.status = 'Ready'
-                    batch.save(update_fields=['status'])
+                # Step 2: Run pipeline.py with real pre-computed peer data
+                for sub in submissions:
+                    try:
+                        c_code = sub.course.course_code if sub.course else ""
+                        c_peer_map = peer_maps_by_course.get(c_code, {})
+                        
+                        evaluate_submission_pipeline(sub.id, peer_map=c_peer_map)
+                    except Exception as e:
+                        print(f"[PIPELINE BATCH ERROR] Failed evaluating submission ID {sub.id}: {e}")
+            finally:
+                current_batch = EvaluationBatch.objects.get(id=b_id)
+                current_batch.status = 'Ready'
+                current_batch.save(update_fields=['status'])
+                print(f"[THREAD COMPLETED] Finished AI evaluation for batch ID {b_id}")
 
-        thread = threading.Thread(target=process_batch_pipeline, args=(submission_ids,))
+        thread = threading.Thread(target=process_batch_pipeline, args=(submission_ids, batch.id))
         thread.start()
 
         messages.success(request, f"Started background AI evaluation for {len(submission_ids)} pending submission(s) in batch '{batch.batch_name}'.")

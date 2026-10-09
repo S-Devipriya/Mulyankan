@@ -5,7 +5,7 @@ from app.services.scheme_manager import decompose_submission_qa
 from app.services.retrieval import retrieve_relevant_chunks
 
 def evaluate_submission_pipeline(submission_id: int, peer_map: dict = None) -> EvaluationResult:
-
+    print(f"Starting evaluation for submission ID: {submission_id}")
     submission = AssignmentSubmission.objects.select_related("course").get(id=submission_id)
     course = submission.course
 

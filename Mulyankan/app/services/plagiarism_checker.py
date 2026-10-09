@@ -65,8 +65,6 @@ def detect_ai_content(student_answer: str):
         return 0.0
 
     cleaned_answer = _clean_text_for_ai_detection(student_answer)
-    print(f"\n[AI DETECTOR DEBUG] Cleaned Length: {len(cleaned_answer)}")
-    print(f"[AI DETECTOR DEBUG] Cleaned Start: {repr(cleaned_answer[:1500])}\n")
     if len(cleaned_answer) < 30:
         return 0.0
 

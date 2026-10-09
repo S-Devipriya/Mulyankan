@@ -26,7 +26,7 @@ def evaluate_qa_unit(question_text: str, student_answer: str, max_marks: float, 
         "with the provided course textbook context.\n\n"
         "Rate each criterion on an absolute scale of 0 to 100:\n"
         "- Content (0-100): Conceptual correctness, factual accuracy, and alignment with course material.\n"
-        "- Presentation (0-100): Logical organization, flow, formatting, and structural clarity.\n"
+        "- Presentation (0-100): Logical organization, length, flow, formatting and structural clarity. Sufficient answer length = 200 words per every 10 marks\n"
         "- Linguistic (0-100): Academic language, grammar, clarity, and terminological precision.\n\n"
         "Do NOT compute total marks or perform arithmetic. Provide qualitative feedback and cite specific "
         "textbook blocks, units, and pages that substantiate your evaluation."
@@ -37,12 +37,14 @@ def evaluate_qa_unit(question_text: str, student_answer: str, max_marks: float, 
         {question_text}
         OFFICIAL REFERENCE TEXTBOOK CHUNKS:
         {formatted_context if formatted_context else "No specific textbook chunk retrieved."}
+        MAX MARKS:
+        {max_marks}
         STUDENT ANSWER:
         {student_answer}
         Provide an objective assessment of the student answer in the requested JSON format following the 0-100 rubric criteria and referencing citations."""
 
     response = client.models.generate_content(
-        model='gemini-3.5-flash-lite',
+        model='gemini-3.1-flash-lite',
         contents=prompt,
         config=types.GenerateContentConfig(
             system_instruction=system_instruction,
